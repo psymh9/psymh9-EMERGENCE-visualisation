@@ -47,6 +47,7 @@ class Misc(Values):
    ELEVEN = ValueConstant(11)
    TWELVE = ValueConstant(12)
    THIRTEEN = ValueConstant(13)
+   RESOLUTION_VISUALISATION = ValueConstant(1250) 
    LEGEND_TITLE = ValueConstant("Legend Node: ")
    ONE_HUNDRED = ValueConstant(100)
    LEGEND_X_VALUE = ValueConstant(-1500)
@@ -58,6 +59,8 @@ class Misc(Values):
    CENTRAL_NODE_ID = ValueConstant("Central Node")
    CENTRAL_NODE_LABEL = ValueConstant("Emergence Network")
    CENRAL_NODE_COLOUR = ValueConstant("black")
+   READ_MODE = ValueConstant("r")
+   ENCODING = ValueConstant("utf-8")
    HTML_FILE_NAME = ValueConstant("network_visualisation.html")
    NAME = ValueConstant("Name: ")
    INSTITUTION = ValueConstant("\nInstitution: ")
@@ -95,29 +98,29 @@ def setMemberColour(specialty):
    """
    Returns a specific node-colour based on the member's specialty.  
    """
-   match specialty:
-      #Matches the specialty to each case returning a specific colour
-      case Specialty.COMPUTER_SCIENCE.value:
-         #All computer scientists have a red node colour
-         return Colour.RED.value
-      case Specialty.ROBOTICS.value:
-         #All roboticists have a blue node colour 
-         return Colour.BLUE.value
-      case Specialty.DESIGN_ENGINEERING_INNOVATION.value:
-         #All design engineers have a green node colour
-         return Colour.GREEN.value
-      case Specialty.HEALTHCARE.value:
-         #All Heathcare professionals/students have a yellow node colour
-         return Colour.YELLOW.value
-      case Specialty.PHYSIOTHERAPY.value:
-         #All Physiotherapists have an orange node colour
-         return Colour.ORANGE.value
-      case Specialty.ELECTRONIC_ENGINEERING.value:
-         #All Electronic Engineers have a magenta node colour
-         return Colour.MAGENTA.value
-      case Specialty.SOCIAL_CARE.value:
-         #All Social Care workers have a purple node colour 
-         return Colour.PURPLE.value
+
+   #Colours nodes a unique colour according to the specialty
+   if (specialty == Specialty.COMPUTER_SCIENCE.value):
+      #All Computer Scientists are coloured as red
+      return Colour.RED.value
+   elif (specialty == Specialty.ROBOTICS.value):
+      #All Roboticists are coloured as blue
+      return Colour.BLUE.value
+   elif (specialty == Specialty.DESIGN_ENGINEERING_INNOVATION.value):
+      #All Design Engineers are coloured Green
+      return Colour.GREEN.value
+   elif (specialty == Specialty.HEALTHCARE.value):
+      #All Healthcare professionals are coloured yellow
+      return Colour.YELLOW.value
+   elif (specialty == Specialty.PHYSIOTHERAPY.value):
+      #All Physiotherapsists are coloured orange
+      return Colour.ORANGE.value
+   elif (specialty == Specialty.ELECTRONIC_ENGINEERING.value):
+      #All Electronic Engineers are coloured magenta
+      return Colour.MAGENTA.value
+   elif (specialty == Specialty.SOCIAL_CARE.value):
+      #All Electronic Engineers are coloured purple
+      return Colour.PURPLE.value
 
 def format_motivation_text(motivationText, charLimit):
    """
@@ -240,9 +243,9 @@ for node in G.nodes:
 
 # Save and read graph as HTML file (on Streamlit Sharing)
 
-G.save_graph('network_visualisation.html')
-HtmlFile = open('network_visualisation.html','r',encoding='utf-8')
+G.save_graph(Misc.HTML_FILE_NAME.value)
+HtmlFile = open(Misc.HTML_FILE_NAME.value,Misc.READ_MODE.value,encoding=Misc.ENCODING.value)
 
-components.html(HtmlFile.read(), width=1250, height=1250)
+components.html(HtmlFile.read(), width=Misc.RESOLUTION_VISUALISATION.value, height=Misc.RESOLUTION_VISUALISATION.value)
 
 
