@@ -34,7 +34,7 @@ class Misc(Values):
    """
    Constants representing miscellaneous values used within the program.  
    """
-   EXCEL_FILE = ValueConstant("C:\\Users\\maxim\\OneDrive\\Documents\\EMERGENCENetworkVisualisation\\NetworkVisualisationData\\EMERGENCECollatedData.xlsx")
+   EXCEL_FILE = ValueConstant("C:\\Users\\maxim\\OneDrive\\Documents\\psymh9-EMERGENCE-visualisation\\EMERGENCENetworkVisualisation\\NetworkVisualisationData\\EMERGENCECollatedData.xlsx")
    ZERO = ValueConstant(0)
    ONE = ValueConstant(1)
    TWO = ValueConstant(2)
