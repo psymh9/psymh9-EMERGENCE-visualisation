@@ -1,7 +1,7 @@
 from pyvis.network import Network
 from constantly import ValueConstant, Values
 from textwrap3 import wrap
-import networkx as nx, openpyxl, streamlit.components.v1 as components, os
+import networkx as nx, openpyxl, streamlit.components.v1 as components, os, streamlit as st
 
 class Specialty(Values):
    """
@@ -46,7 +46,10 @@ class Misc(Values):
    ELEVEN = ValueConstant(11)
    TWELVE = ValueConstant(12)
    THIRTEEN = ValueConstant(13)
-   RESOLUTION_VISUALISATION = ValueConstant(1250) 
+   WIDTH_RESOLUTION_VISUALISATION = ValueConstant(1750)
+   HEIGHT_RESOLUTION_VISUALISATION = ValueConstant(1250) 
+   STREAMLIT_TITLE = ValueConstant("EMERGENCE Network Visualisation Tool")
+   STREAMLIT_TEXT = ValueConstant("Refer to the website for instructions on how to use")
    LEGEND_TITLE = ValueConstant("Legend Node: ")
    ONE_HUNDRED = ValueConstant(100)
    LEGEND_X_VALUE = ValueConstant(-1500)
@@ -148,9 +151,12 @@ member_names = []
 #Reference to the excel file containing the member details 
 member_workbook = openpyxl.load_workbook(Misc.EXCEL_FILE.value)
 
+#Reference to the first sheet in the excel file
 sheet = member_workbook.worksheets[Misc.ZERO.value]
-
-print(sheet)
+#Displays the title for the streamlit website
+st.title(Misc.STREAMLIT_TITLE.value)
+#Displays the text to show under the streamlit site
+st.text(Misc.STREAMLIT_TEXT.value)
 
 #Initialises a networkX graph for the legend nodes
 nx_graph = nx.Graph()
@@ -254,6 +260,7 @@ except:
     G.save_graph(Misc.FORMATTED_HTML_FILE_NAME.value.format(path_label = path))
     HtmlFile = open(Misc.FORMATTED_HTML_FILE_NAME.value.format(path_label = path),Misc.READ_MODE.value,encoding=Misc.ENCODING.value)
 
-components.html(HtmlFile.read(), width=Misc.RESOLUTION_VISUALISATION.value, height=Misc.RESOLUTION_VISUALISATION.value)
+#Configures the html for the streamlit site
+components.html(HtmlFile.read(), width=Misc.WIDTH_RESOLUTION_VISUALISATION.value, height=Misc.HEIGHT_RESOLUTION_VISUALISATION.value)
 
 
