@@ -1,9 +1,6 @@
-pyvis
-constantly
-textwrap3
-networkx
-matplotlib
-xml
-openpyxl
-networkx
-streamlit
+constantly==15.1.0
+networkx==3.1
+openpyxl==3.1.2
+pyvis==0.3.2
+streamlit==1.25.0
+textwrap3==0.9.2
