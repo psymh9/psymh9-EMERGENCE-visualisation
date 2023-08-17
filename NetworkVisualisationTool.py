@@ -46,7 +46,7 @@ class Misc(Values):
    ELEVEN = ValueConstant(11)
    TWELVE = ValueConstant(12)
    THIRTEEN = ValueConstant(13)
-   WIDTH_RESOLUTION_VISUALISATION = ValueConstant(1500)
+   WIDTH_RESOLUTION_VISUALISATION = ValueConstant(1000)
    HEIGHT_RESOLUTION_VISUALISATION = ValueConstant(1000) 
    STREAMLIT_TITLE = ValueConstant("EMERGENCE Network Visualisation Tool")
    STREAMLIT_TEXT = ValueConstant("Refer to the website for instructions on how to use")
