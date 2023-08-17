@@ -49,7 +49,7 @@ class Misc(Values):
    WIDTH_RESOLUTION_VISUALISATION = ValueConstant(1000)
    HEIGHT_RESOLUTION_VISUALISATION = ValueConstant(1000) 
    STREAMLIT_TITLE = ValueConstant("EMERGENCE Network Visualisation Tool")
-   STREAMLIT_TEXT = ValueConstant("Refer to the website for instructions on how to use")
+   STREAMLIT_TEXT = ValueConstant("Refer to the EMERGENCE website for instructions on how to use")
    LEGEND_TITLE = ValueConstant("Legend Node: ")
    ONE_HUNDRED = ValueConstant(100)
    LEGEND_X_VALUE = ValueConstant(-1500)
