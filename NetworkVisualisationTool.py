@@ -98,6 +98,7 @@ class Misc(Values):
    BGCOLOUR = ValueConstant("#fffff")
    HTML_FILES = ValueConstant("html_files")
    FORMATTED_HTML_FILE_NAME = ValueConstant("{path_label}\\network_visualisation.html")
+   PAGE_LAYOUT = ValueConstant("wide")
 
 def setMemberColour(specialty):
    """
@@ -144,7 +145,7 @@ def format_motivation_text(motivationText, charLimit):
    #returns a formattedMessage once this is complete
    return formattedMessage
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout=Misc.PAGE_LAYOUT.value)
 
 #List containing the names of all the members in the network 
 member_names = []
