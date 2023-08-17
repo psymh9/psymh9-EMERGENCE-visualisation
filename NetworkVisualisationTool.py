@@ -145,6 +145,7 @@ def format_motivation_text(motivationText, charLimit):
    #returns a formattedMessage once this is complete
    return formattedMessage
 
+#Sets the layout of the streamlit page
 st.set_page_config(layout=Misc.PAGE_LAYOUT.value)
 
 #List containing the names of all the members in the network 
@@ -238,7 +239,7 @@ for i in range(Misc.ZERO.value, len(member_names)):
    #Iterates through the member_names array
    nx_graph.add_edge(Misc.CENTRAL_NODE_ID.value, member_names[i]) #Creates an edge between the central node and all the other nodes
 
-G = Network(notebook=True, filter_menu=Misc.TRUE.value, height=Misc.HEIGHT.value, width=Misc.WIDTH.value, bgcolor=Misc.BGCOLOUR.value, cdn_resources='remote')
+G = Network(notebook=Misc.TRUE.value, filter_menu=Misc.TRUE.value, height=Misc.HEIGHT.value, width=Misc.WIDTH.value, bgcolor=Misc.BGCOLOUR.value, cdn_resources='remote')
 #Defines the PyVis graph which takes in the initial networkX graph as an input.
 G.from_nx(nx_graph) 
 #Derives a PyVis graph from the previous networkX graph
