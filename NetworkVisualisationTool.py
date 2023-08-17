@@ -144,6 +144,7 @@ def format_motivation_text(motivationText, charLimit):
    #returns a formattedMessage once this is complete
    return formattedMessage
 
+st.set_page_config(layout="wide")
 
 #List containing the names of all the members in the network 
 member_names = []
@@ -164,8 +165,6 @@ nx_graph = nx.Graph()
 #Stores the number of actual nodes & the number of nodes in the legend
 num_actual_nodes = sheet.max_row-Misc.ONE.value
 num_legend_nodes = Misc.SEVEN.value
-
-st.set_page_config(layout="wide")
 
 #The Step value represents the spacing between each of the legend nodes
 step = Misc.ONE_HUNDRED.value
