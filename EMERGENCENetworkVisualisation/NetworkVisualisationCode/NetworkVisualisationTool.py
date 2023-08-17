@@ -33,7 +33,7 @@ class Misc(Values):
    """
    Constants representing miscellaneous values used within the program.  
    """
-   EXCEL_FILE = ValueConstant("C:\\Users\\maxim\\OneDrive\\Documents\\psymh9-EMERGENCE-visualisation\\EMERGENCENetworkVisualisation\\NetworkVisualisationData\\EMERGENCECollatedData.xlsx")
+   EXCEL_FILE = ValueConstant("..\\NetworkVisualisationData\\EMERGENCECollatedData.xlsx")
    ZERO = ValueConstant(0)
    ONE = ValueConstant(1)
    TWO = ValueConstant(2)
@@ -82,7 +82,7 @@ class Misc(Values):
    Y = ValueConstant("y")
    PHYSICS = ValueConstant("physics")
    SHAPE = ValueConstant("shape")
-   TMP = ValueConstant('C:\\Users\\maxim\\OneDrive\\Documents\\psymh9-EMERGENCE-visualisation\\EMERGENCENetworkVisualisation\\tmp')
+   TMP = ValueConstant('..\\EMERGENCENetworkVisualisation\\tmp')
    WIDTH_CONSTRAINT = ValueConstant("widthConstraint")
    FONT = ValueConstant("font")
    SPECIALTY_WORD = ValueConstant("Specialty")
@@ -93,6 +93,8 @@ class Misc(Values):
    HEIGHT = ValueConstant("1080px")
    WIDTH = ValueConstant("100%")
    BGCOLOUR = ValueConstant("#fffff")
+   HTML_FILES = ValueConstant("html_files")
+   FORMATTED_HTML_FILE_NAME = ValueConstant("..\\{path_label}\\network_visualisation.html")
 
 def setMemberColour(specialty):
    """
@@ -244,13 +246,13 @@ for node in G.nodes:
 # Save and read graph as HTML file (on Streamlit Sharing)
 try:
    path = Misc.TMP.value
-   G.save_graph(f'{path}/network_visualisation.html')
-   HtmlFile = open(f'{path}/network_visualisation.html',Misc.READ_MODE.value,encoding=Misc.ENCODING.value)
+   G.save_graph(Misc.FORMATTED_HTML_FILE_NAME.value.format(path_label = path))
+   HtmlFile = open(Misc.FORMATTED_HTML_FILE_NAME.value.format(path_label = path),Misc.READ_MODE.value,encoding=Misc.ENCODING.value)
 # Save and read graph as HTML file (locally)
 except:
-    path = 'html_files'
-    G.save_graph(f'{path}/network_visualisation.html')
-    HtmlFile = open(f'{path}/network_visualisation.html',Misc.READ_MODE.value,encoding=Misc.ENCODING.value)
+    path = Misc.HTML_FILES.value
+    G.save_graph(Misc.FORMATTED_HTML_FILE_NAME.value.format(path_label = path))
+    HtmlFile = open(Misc.FORMATTED_HTML_FILE_NAME.value.format(path_label = path),Misc.READ_MODE.value,encoding=Misc.ENCODING.value)
 
 components.html(HtmlFile.read(), width=Misc.RESOLUTION_VISUALISATION.value, height=Misc.RESOLUTION_VISUALISATION.value)
 
