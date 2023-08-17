@@ -1,8 +1,7 @@
 from pyvis.network import Network
 from constantly import ValueConstant, Values
 from textwrap3 import wrap
-import networkx as nx, matplotlib.pyplot as plt, xml.etree.ElementTree as ET, openpyxl, random  
-import streamlit as st, streamlit.components.v1 as components, pandas as pd, networkx as nx
+import networkx as nx, openpyxl, streamlit.components.v1 as components
 
 class Specialty(Values):
    """
@@ -83,6 +82,7 @@ class Misc(Values):
    Y = ValueConstant("y")
    PHYSICS = ValueConstant("physics")
    SHAPE = ValueConstant("shape")
+   TMP = ValueConstant('C:\\Users\\maxim\\OneDrive\\Documents\\psymh9-EMERGENCE-visualisation\\EMERGENCENetworkVisualisation\\tmp')
    WIDTH_CONSTRAINT = ValueConstant("widthConstraint")
    FONT = ValueConstant("font")
    SPECIALTY_WORD = ValueConstant("Specialty")
@@ -242,9 +242,15 @@ for node in G.nodes:
   node[Misc.VALUE.value] = len(neighbour_map[node[Misc.ID.value]])#Sets the node size based on the number of neighbours
 
 # Save and read graph as HTML file (on Streamlit Sharing)
-
-G.save_graph(Misc.HTML_FILE_NAME.value)
-HtmlFile = open(Misc.HTML_FILE_NAME.value,Misc.READ_MODE.value,encoding=Misc.ENCODING.value)
+try:
+   path = Misc.TMP.value
+   G.save_graph(f'{path}/network_visualisation.html')
+   HtmlFile = open(f'{path}/network_visualisation.html',Misc.READ_MODE.value,encoding=Misc.ENCODING.value)
+# Save and read graph as HTML file (locally)
+except:
+    path = 'html_files'
+    G.save_graph(f'{path}/network_visualisation.html')
+    HtmlFile = open(f'{path}/network_visualisation.html',Misc.READ_MODE.value,encoding=Misc.ENCODING.value)
 
 components.html(HtmlFile.read(), width=Misc.RESOLUTION_VISUALISATION.value, height=Misc.RESOLUTION_VISUALISATION.value)
 
