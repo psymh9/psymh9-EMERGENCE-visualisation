@@ -165,6 +165,8 @@ nx_graph = nx.Graph()
 num_actual_nodes = sheet.max_row-Misc.ONE.value
 num_legend_nodes = Misc.SEVEN.value
 
+st.set_page_config(layout="wide")
+
 #The Step value represents the spacing between each of the legend nodes
 step = Misc.ONE_HUNDRED.value
 #The x value represents the x position of the legend 
