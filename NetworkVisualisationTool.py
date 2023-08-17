@@ -148,7 +148,7 @@ member_names = []
 #Reference to the excel file containing the member details 
 member_workbook = openpyxl.load_workbook(Misc.EXCEL_FILE.value)
 
-sheet = member_workbook.worksheets[0]
+sheet = member_workbook.worksheets[Misc.ZERO.value]
 
 print(sheet)
 
