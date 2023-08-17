@@ -33,7 +33,7 @@ class Misc(Values):
    """
    Constants representing miscellaneous values used within the program.  
    """
-   EXCEL_FILE = ValueConstant("EMERGENCENetworkVisualisation/NetworkVisualisationCode/NetworkVisualisationData/EMERGENCECollatedData.xlsx")
+   EXCEL_FILE = ValueConstant("NetworkVisualisationData/EMERGENCECollatedData.xlsx")
    ZERO = ValueConstant(0)
    ONE = ValueConstant(1)
    TWO = ValueConstant(2)
@@ -82,7 +82,7 @@ class Misc(Values):
    Y = ValueConstant("y")
    PHYSICS = ValueConstant("physics")
    SHAPE = ValueConstant("shape")
-   TMP = ValueConstant('EMERGENCENetworkVisualisation\\NetworkVisualisationCode\\NetworkVisualisationCode\\tmp')
+   TMP = ValueConstant('tmp')
    WIDTH_CONSTRAINT = ValueConstant("widthConstraint")
    FONT = ValueConstant("font")
    SPECIALTY_WORD = ValueConstant("Specialty")
@@ -94,7 +94,7 @@ class Misc(Values):
    WIDTH = ValueConstant("100%")
    BGCOLOUR = ValueConstant("#fffff")
    HTML_FILES = ValueConstant("html_files")
-   FORMATTED_HTML_FILE_NAME = ValueConstant("EMERGENCENetworkVisualisation\\NetworkVisualisationCode\\{path_label}\\network_visualisation.html")
+   FORMATTED_HTML_FILE_NAME = ValueConstant("{path_label}\\network_visualisation.html")
 
 def setMemberColour(specialty):
    """
