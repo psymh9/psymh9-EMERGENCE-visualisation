@@ -1,8 +1,19 @@
 from pyvis.network import Network
 from constantly import ValueConstant, Values
 from textwrap3 import wrap
-import networkx as nx, openpyxl, streamlit.components.v1 as components, os, streamlit as st
+import networkx as nx, openpyxl, streamlit.components.v1 as components, os, streamlit as st, subprocess
 from git import Repo
+
+
+def git_push():
+    try:
+        repo = Repo(Misc.PATH_OF_GIT_REPO.value)
+        origin = repo.remote(name='origin')
+        origin.push()
+    except:
+        print('Some error occured while pushing the code')
+
+subprocess.call(["gwatch.exe"])
 
 class Specialty(Values):
    """
@@ -35,6 +46,7 @@ class Misc(Values):
    Constants representing miscellaneous values used within the program.  
    """
    PATH_OF_GIT_REPO = ValueConstant(r'')
+   COMMIT_MESSAGE = ValueConstant('New members added to the dataset')
    EXCEL_FILE = ValueConstant("NetworkVisualisationData/EMERGENCECollatedData.xlsx")
    ZERO = ValueConstant(0)
    ONE = ValueConstant(1)
@@ -100,15 +112,7 @@ class Misc(Values):
    BGCOLOUR = ValueConstant("#fffff")
    HTML_FILES = ValueConstant("html_files")
    FORMATTED_HTML_FILE_NAME = ValueConstant("{path_label}\\network_visualisation.html")
-   PAGE_LAYOUT = ValueConstant("wide")
-
-def git_push():
-    try:
-        repo = Repo(Misc.PATH_OF_GIT_REPO.value)
-        origin = repo.remote(name='origin')
-        origin.push()
-    except:
-        print('Some error occured while pushing the code')    
+   PAGE_LAYOUT = ValueConstant("wide") 
 
 def setMemberColour(specialty):
    """
@@ -153,7 +157,7 @@ def format_motivation_text(motivationText, charLimit):
       #characters before a newline
       formattedMessage += splitText[i] + Misc.NEWLINE.value
    #returns a formattedMessage once this is complete
-   return formattedMessage
+   return formattedMessage  
 
 #Sets the layout of the streamlit page
 st.set_page_config(layout=Misc.PAGE_LAYOUT.value)
@@ -276,5 +280,4 @@ except:
 
 #Configures the html for the streamlit site
 components.html(HtmlFile.read(), width=Misc.WIDTH_RESOLUTION_VISUALISATION.value, height=Misc.HEIGHT_RESOLUTION_VISUALISATION.value)
-
 git_push()
