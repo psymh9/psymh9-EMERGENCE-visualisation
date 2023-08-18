@@ -13,8 +13,6 @@ def git_push():
     except:
         print(Misc.ERROR_MESSAGE.value)
 
-process = subprocess.Popen("gwatch.exe", shell=True)
-
 class Specialty(Values):
    """
    Constants representing various specialties across the EMERGENCE network. 
@@ -116,6 +114,8 @@ class Misc(Values):
    HTML_FILES = ValueConstant("html_files")
    FORMATTED_HTML_FILE_NAME = ValueConstant("{path_label}\\network_visualisation.html")
    PAGE_LAYOUT = ValueConstant("wide") 
+
+process = subprocess.Popen(Misc.GWATCH.value, shell=Misc.TRUE.value)
 
 def setMemberColour(specialty):
    """
