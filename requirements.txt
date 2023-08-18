@@ -1,0 +1,8 @@
+constantly==15.1.0
+GitPython==3.1.32
+GitPython==3.1.32
+networkx==3.1
+openpyxl==3.1.2
+pyvis==0.3.2
+streamlit==1.25.0
+textwrap3==0.9.2

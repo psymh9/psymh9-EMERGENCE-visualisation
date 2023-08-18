@@ -1,0 +1,615 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script>function neighbourhoodHighlight(params) {
+  // console.log("in nieghbourhoodhighlight");
+  allNodes = nodes.get({ returnType: "Object" });
+  // originalNodes = JSON.parse(JSON.stringify(allNodes));
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    highlightActive = true;
+    var i, j;
+    var selectedNode = params.nodes[0];
+    var degrees = 2;
+
+    // mark all nodes as hard to read.
+    for (let nodeId in allNodes) {
+      // nodeColors[nodeId] = allNodes[nodeId].color;
+      allNodes[nodeId].color = "rgba(200,200,200,0.5)";
+      if (allNodes[nodeId].hiddenLabel === undefined) {
+        allNodes[nodeId].hiddenLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+    var connectedNodes = network.getConnectedNodes(selectedNode);
+    var allConnectedNodes = [];
+
+    // get the second degree nodes
+    for (i = 1; i < degrees; i++) {
+      for (j = 0; j < connectedNodes.length; j++) {
+        allConnectedNodes = allConnectedNodes.concat(
+          network.getConnectedNodes(connectedNodes[j])
+        );
+      }
+    }
+
+    // all second degree nodes get a different color and their label back
+    for (i = 0; i < allConnectedNodes.length; i++) {
+      // allNodes[allConnectedNodes[i]].color = "pink";
+      allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.75)";
+      if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[allConnectedNodes[i]].label =
+          allNodes[allConnectedNodes[i]].hiddenLabel;
+        allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // all first degree nodes get their own color and their label back
+    for (i = 0; i < connectedNodes.length; i++) {
+      // allNodes[connectedNodes[i]].color = undefined;
+      allNodes[connectedNodes[i]].color = nodeColors[connectedNodes[i]];
+      if (allNodes[connectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[connectedNodes[i]].label =
+          allNodes[connectedNodes[i]].hiddenLabel;
+        allNodes[connectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // the main node gets its own color and its label back.
+    // allNodes[selectedNode].color = undefined;
+    allNodes[selectedNode].color = nodeColors[selectedNode];
+    if (allNodes[selectedNode].hiddenLabel !== undefined) {
+      allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
+      allNodes[selectedNode].hiddenLabel = undefined;
+    }
+  } else if (highlightActive === true) {
+    // console.log("highlightActive was true");
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      // allNodes[nodeId].color = "purple";
+      allNodes[nodeId].color = nodeColors[nodeId];
+      // delete allNodes[nodeId].color;
+      if (allNodes[nodeId].hiddenLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
+        allNodes[nodeId].hiddenLabel = undefined;
+      }
+    }
+    highlightActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    // console.log("Nothing was selected");
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        // allNodes[nodeId].color = {};
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function filterHighlight(params) {
+  allNodes = nodes.get({ returnType: "Object" });
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    filterActive = true;
+    let selectedNodes = params.nodes;
+
+    // hiding all nodes and saving the label
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = true;
+      if (allNodes[nodeId].savedLabel === undefined) {
+        allNodes[nodeId].savedLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+
+    for (let i=0; i < selectedNodes.length; i++) {
+      allNodes[selectedNodes[i]].hidden = false;
+      if (allNodes[selectedNodes[i]].savedLabel !== undefined) {
+        allNodes[selectedNodes[i]].label = allNodes[selectedNodes[i]].savedLabel;
+        allNodes[selectedNodes[i]].savedLabel = undefined;
+      }
+    }
+
+  } else if (filterActive === true) {
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = false;
+      if (allNodes[nodeId].savedLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].savedLabel;
+        allNodes[nodeId].savedLabel = undefined;
+      }
+    }
+    filterActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function selectNode(nodes) {
+  network.selectNodes(nodes);
+  neighbourhoodHighlight({ nodes: nodes });
+  return nodes;
+}
+
+function selectNodes(nodes) {
+  network.selectNodes(nodes);
+  filterHighlight({nodes: nodes});
+  return nodes;
+}
+
+function highlightFilter(filter) {
+  let selectedNodes = []
+  let selectedProp = filter['property']
+  if (filter['item'] === 'node') {
+    let allNodes = nodes.get({ returnType: "Object" });
+    for (let nodeId in allNodes) {
+      if (allNodes[nodeId][selectedProp] && filter['value'].includes((allNodes[nodeId][selectedProp]).toString())) {
+        selectedNodes.push(nodeId)
+      }
+    }
+  }
+  else if (filter['item'] === 'edge'){
+    let allEdges = edges.get({returnType: 'object'});
+    // check if the selected property exists for selected edge and select the nodes connected to the edge
+    for (let edge in allEdges) {
+      if (allEdges[edge][selectedProp] && filter['value'].includes((allEdges[edge][selectedProp]).toString())) {
+        selectedNodes.push(allEdges[edge]['from'])
+        selectedNodes.push(allEdges[edge]['to'])
+      }
+    }
+  }
+  selectNodes(selectedNodes)
+}</script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+            
+            
+            
+            
+            
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/css/tom-select.min.css" integrity="sha512-43fHB3GLgZfz8QXl1RPQ8O66oIgv3po9cJ5erMt1c4QISq9dYb195T3vr5ImnJPXuVroKcGBPXBFKETW8jrPNQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/js/tom-select.complete.js" integrity="sha512-jeF9CfnvzDiw9G9xiksVjxR2lib44Gnovvkv+3CgCG6NXCD4gqlA5nDAVW5WjpA+i+/zKsUWV5xNEbW1X/HH0Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 1080px;
+                 background-color: #fffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 1080px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+              <div id="filter-menu" class="card-header">
+                <div class="row no-gutters">
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'item')"
+                            id="select-item"
+                        >
+                        <option value="">Select a network item</option>
+                        <option value="edge">edge</option>
+                        <option value="node">node</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'property')"
+                            id="select-property"
+                        >
+                        <option value="">Select a property...</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            id="select-value"
+                        >
+                        <option value="">Select value(s)...</option>
+                    </select>
+                  </div>
+                  <div class="col-1 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="highlightFilter(filter);">Filter</button>
+                  </div>
+                  <div class="col-2 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="clearFilter(true)">Reset Selection</button>
+                  </div>
+                </div>
+              </div>
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+                  // explicitly using onItemAdd and this function as we need to save multiple values
+                  let updateValueFilter = function() {
+                      return function () {
+                      filter['value'].push(arguments[0])
+                      }
+                  }
+
+                  let valueControl = new TomSelect("#select-value",{
+                      maxItems: null,
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: updateValueFilter()
+                  });
+
+                  let addValues = function() {
+                      return function () {
+                          // clear the current value options and add the selected attribute values
+                          // tom-select handles duplicates
+                          let selectedProperty = arguments[0];
+                          valueControl.clear();
+                          valueControl.clearOptions();
+                          filter['value'] = []
+                          if (filter['item'] === 'node') {
+                              for (let each in allNodes) {
+                                  valueControl.addOption({
+                                      id:allNodes[each][selectedProperty],
+                                      title:allNodes[each][selectedProperty]
+                                  })
+                              }
+                          }
+                          else if (filter['item'] === 'edge') {
+                              for (let each in allEdges) {
+                                  valueControl.addOption({
+                                      id:allEdges[each][selectedProperty],
+                                      title:allEdges[each][selectedProperty]
+                                  })
+                              }
+                          }
+                      }
+                  };
+
+                  let propControl = new TomSelect("#select-property",{
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addValues()
+                  });
+
+                  let addProperties = function() {
+                      return function () {
+                          // loops through the selected network item and adds the attributes to dropdown
+                          // tom-select handles duplicates
+                          clearFilter(false)
+                          if (arguments[0] === 'edge') {
+                              for (let each in allEdges) {
+                                  if (allEdges.hasOwnProperty(each)) {
+                                      for (let eachProp in allEdges[each]) {
+                                          if (allEdges[each].hasOwnProperty(eachProp)) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          else if (arguments[0] === 'node') {
+                              for (let each in allNodes) {
+                                  if (allNodes.hasOwnProperty(each)) {
+                                      for (let eachProp in allNodes[each]) {
+                                          if (allNodes[each].hasOwnProperty(eachProp)
+                                              && (eachProp !== 'hidden' && eachProp !== 'savedLabel'
+                                                  && eachProp !== 'hiddenLabel')) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  };
+
+                  let itemControl = new TomSelect("#select-item",{
+                      create: false,
+                      sortField:{
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addProperties()
+                  });
+
+                  function clearFilter(reset) {
+                      // utility function to clear all the selected filter options
+                      // if reset is set to true, the existing filter will be removed
+                      // else, only the dropdown options are cleared
+                      propControl.clear();
+                      propControl.clearOptions();
+                      valueControl.clear();
+                      valueControl.clearOptions();
+                      filter = {
+                          item : '',
+                          property : '',
+                          value : []
+                      }
+                      if (reset) {
+                          itemControl.clear();
+                          filterHighlight({nodes: []})
+                      }
+                  }
+
+                  function updateFilter(value, key) {
+                      // key could be 'item' or 'property' and value is as selected in dropdown
+                      filter[key] = value
+                  }
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"Specialty": "include-central-node", "alphabet": "include-central-node", "color": "black", "id": "Central Node", "institution": "include-central-node", "label": "Emergence Network", "location": "include-central-node", "physics": true, "shape": "dot", "size": 10, "title": "Central Node", "value": 134, "x": 1000, "y": 1000}, {"Specialty": "Computer Science", "alphabet": "A", "color": "red", "id": "Abdel-Karim Al-Tamimi", "institution": "Sheffield Hallam University", "label": "Abdel-Karim Al-Tamimi", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Abdel-Karim Al-Tamimi\nInstitution: Sheffield Hallam University\nJob Title: Senior Lecturer\nSpecialty: Computer Science\nLocation: Sheffield\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "A", "color": "blue", "id": "Abolfazl Zaraki", "institution": "University of Hertfordshire", "label": "Abolfazl Zaraki", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Abolfazl Zaraki\nInstitution: University of Hertfordshire\nJob Title: Senior Lecturer\nSpecialty: Robotics\nLocation: Hertfordshire\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at people with lived experience of\nfrailty to enable long-term autonomy\u00a0including areas such as fail-safe design, situation awareness,\nautomated risk assessment and smart sensing.;Accessible Human-Robot Interaction, taking into\nconsideration multi-modal and intuitive interaction to address cognitive, sensory and physical\nimpairments;Regulatory Frameworks for deployment and integration of assistive robotics;Benchmarking\ndatasets to support the development of accessible HRI;Ethical frameworks for integration of\nassistive robotics;Scoping research:\u00a0When does an assistive robot become a medical device?;Scoping\nresearch:\u00a0What are the challenges for enabling human agency in shared decision-making for assistive\nrobotics technology to support people with lived experience of frailty?;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "A", "color": "blue", "id": "Alejandro Jimenez Rodriguez", "institution": "Sheffield Hallam University", "label": "Alejandro Jimenez Rodriguez", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Alejandro Jimenez Rodriguez\nInstitution: Sheffield Hallam University\nJob Title: Lecturer in artificial intelligence and robotics\nSpecialty: Robotics\nLocation: Sheffield\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Scoping research:\u00a0What are the challenges for\nenabling human agency in shared decision-making for assistive robotics technology to support people\nwith lived experience of frailty?;Safety frameworks for assistive robotics technologies aimed at\npeople with lived experience of frailty to enable long-term autonomy\u00a0including areas such as fail-\nsafe design, situation awareness, automated risk assessment and smart sensing.;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "A", "color": "blue", "id": "Amir ALY", "institution": "University of Plymouth", "label": "Amir ALY", "location": "Plymouth", "physics": true, "shape": "dot", "size": 10, "title": "Name: Amir ALY\nInstitution: University of Plymouth\nJob Title: Lecturer in AI and Robotics\nSpecialty: Robotics\nLocation: Plymouth\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "A", "color": "red", "id": "Andrew Edmondson", "institution": "Heriot-Watt University", "label": "Andrew Edmondson", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Andrew Edmondson\nInstitution: Heriot-Watt University\nJob Title: Student\nSpecialty: Computer Science\nLocation: Edinburgh\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Design Engineering and Innovation", "alphabet": "A", "color": "green", "id": "Anna Chatzimichali", "institution": "UWE Bristol", "label": "Anna Chatzimichali", "location": "Bristol", "physics": true, "shape": "dot", "size": 10, "title": "Name: Anna Chatzimichali\nInstitution: UWE Bristol\nJob Title: Associate Prof. of Design Engineering and Innovation\nSpecialty: Design Engineering and Innovation\nLocation: Bristol\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "A", "color": "blue", "id": "Armaghan Moemeni", "institution": "University of Nottingham", "label": "Armaghan Moemeni", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Armaghan Moemeni\nInstitution: University of Nottingham\nJob Title: Assistant professor, Computer Science \nSpecialty: Robotics\nLocation: Nottingham\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Benchmarking datasets to support the\ndevelopment of accessible HRI;Scoping research:\u00a0What CPD is needed to support future care\nprofessionals?;Scoping research:\u00a0What are the challenges for enabling human agency in shared\ndecision-making for assistive robotics technology to support PWLEF?;Scoping research:\u00a0When does an\nassistive robot become a medical device?;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "A", "color": "red", "id": "Aslam Jarwar", "institution": "Sheffield Hallam University", "label": "Aslam Jarwar", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Aslam Jarwar\nInstitution: Sheffield Hallam University\nJob Title: Sr. Lecturer\nSpecialty: Computer Science\nLocation: Sheffield\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "B", "color": "blue", "id": "Bangli Liu", "institution": "De Montfort University", "label": "Bangli Liu", "location": "Leicester", "physics": true, "shape": "dot", "size": 10, "title": "Name: Bangli Liu\nInstitution: De Montfort University\nJob Title: Lecturer\nSpecialty: Robotics\nLocation: Leicester\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at people with lived experience of\nfrailty to enable long-term autonomy\u00a0including areas such as fail-safe design, situation awareness,\nautomated risk assessment and smart sensing.;Accessible Human-Robot Interaction, taking into\nconsideration multi-modal and intuitive interaction to address cognitive, sensory and physical\nimpairments;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "C", "color": "blue", "id": "Carlos Cifuentes", "institution": "Bristol Robotics Laboratory, UWE", "label": "Carlos Cifuentes", "location": "Bristol", "physics": true, "shape": "dot", "size": 10, "title": "Name: Carlos Cifuentes\nInstitution: Bristol Robotics Laboratory, UWE\nJob Title: Associate Professor in Human-Robot Interaction\nSpecialty: Robotics\nLocation: Bristol\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "C", "color": "red", "id": "Carolina Fuentes", "institution": "Cardiff University", "label": "Carolina Fuentes", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Carolina Fuentes\nInstitution: Cardiff University\nJob Title: Lecturer\nSpecialty: Computer Science\nLocation: Hertfordshire\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "C", "color": "red", "id": "Catherine Menon", "institution": "University of Hertfordshire", "label": "Catherine Menon", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Catherine Menon\nInstitution: University of Hertfordshire\nJob Title: Principal Lecturer\nSpecialty: Computer Science\nLocation: Hertfordshire\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "C", "color": "red", "id": "Charith Abhayaratne", "institution": "University of Sheffield", "label": "Charith Abhayaratne", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Charith Abhayaratne\nInstitution: University of Sheffield\nJob Title: Lecturer\nSpecialty: Computer Science\nLocation: Sheffield\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "D", "color": "red", "id": "David Cameron", "institution": "University of Sheffield", "label": "David Cameron", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: David Cameron\nInstitution: University of Sheffield\nJob Title: Lecturer in Human Computer Interaction\nSpecialty: Computer Science\nLocation: Sheffield\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "D", "color": "blue", "id": "Deepak Sahoo", "institution": "Swansea University", "label": "Deepak Sahoo", "location": "Swansea", "physics": true, "shape": "dot", "size": 10, "title": "Name: Deepak Sahoo\nInstitution: Swansea University\nJob Title: Associate Professor\nSpecialty: Robotics\nLocation: Swansea\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "D", "color": "red", "id": "Dimitris Anagnostou", "institution": "Heriot Watt University", "label": "Dimitris Anagnostou", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Dimitris Anagnostou\nInstitution: Heriot Watt University\nJob Title: Associate Professor\nSpecialty: Computer Science\nLocation: Edinburgh\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "D", "color": "red", "id": "Dr Alistair McConnell", "institution": "Heriot-Watt University", "label": "Dr Alistair McConnell", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Dr Alistair McConnell\nInstitution: Heriot-Watt University\nJob Title: Assistant Professor \nSpecialty: Computer Science\nLocation: Edinburgh\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "F", "color": "blue", "id": "Frank Foerster", "institution": "University of Hertfordshire", "label": "Frank Foerster", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Frank Foerster\nInstitution: University of Hertfordshire\nJob Title: Senior Lecturer\nSpecialty: Robotics\nLocation: Hertfordshire\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "G", "color": "blue", "id": "Gerard Canal", "institution": "King\u0027s College London", "label": "Gerard Canal", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Gerard Canal\nInstitution: King\u0027s College London\nJob Title: Lecturer in Autonomous Systems\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Safety frameworks for assistive robotics\ntechnologies aimed at people with lived experience of frailty to enable long-term autonomy\u00a0including\nareas such as fail-safe design, situation awareness, automated risk assessment and smart\nsensing.;Scoping research:\u00a0What are the challenges for enabling human agency in shared decision-\nmaking for assistive robotics technology to support people with lived experience of frailty?;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "G", "color": "red", "id": "Guodong Zhao", "institution": "University of Glasgow", "label": "Guodong Zhao", "location": "Glasgow", "physics": true, "shape": "dot", "size": 10, "title": "Name: Guodong Zhao\nInstitution: University of Glasgow\nJob Title: Senior Lecturer\nSpecialty: Computer Science\nLocation: Glasgow\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "H", "color": "blue", "id": "Haibin Cai", "institution": "Loughborough University", "label": "Haibin Cai", "location": "Loughborough", "physics": true, "shape": "dot", "size": 10, "title": "Name: Haibin Cai\nInstitution: Loughborough University\nJob Title: Lecturer\nSpecialty: Robotics\nLocation: Loughborough\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Safety frameworks for assistive robotics\ntechnologies aimed at people with lived experience of frailty to enable long-term autonomy\u00a0including\nareas such as fail-safe design, situation awareness, automated risk assessment and smart sensing.;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "H", "color": "blue", "id": "Helena Webb", "institution": "University of Nottingham ", "label": "Helena Webb", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Helena Webb\nInstitution: University of Nottingham \nJob Title: Transitional Assistant Professor\nSpecialty: Robotics\nLocation: Nottingham\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Regulatory Frameworks for deployment and\nintegration of assistive robotics;Scoping research:\u00a0What CPD is needed to support future care\nprofessionals?;Scoping research:\u00a0What are the challenges for enabling human agency in shared\ndecision-making for assistive robotics technology to support people with lived experience of\nfrailty?;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "I", "color": "blue", "id": "Ildar Farkhatdinov", "institution": "Queen Mary University of London", "label": "Ildar Farkhatdinov", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Ildar Farkhatdinov\nInstitution: Queen Mary University of London\nJob Title: Senior Lecturer\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "I", "color": "blue", "id": "Indu P Bodala", "institution": "University of Southampton", "label": "Indu P Bodala", "location": "Southampton", "physics": true, "shape": "dot", "size": 10, "title": "Name: Indu P Bodala\nInstitution: University of Southampton\nJob Title: Lecturer in Computer Science\nSpecialty: Robotics\nLocation: Southampton\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at PWLEF to enable long-term\nautonomy\u00a0including areas such as fail-safe design, situation awareness, automated risk assessment\nand smart sensing.;Accessible Human-Robot Interaction, taking into consideration multi-modal and\nintuitive interaction to address cognitive, sensory and physical impairments;Scoping research:\u00a0When\ndoes an assistive robot become a medical device?;Ethical frameworks for integration of assistive\nrobotics;Benchmarking datasets to support the development of accessible HRI;Scoping research:\u00a0What\nare the challenges for enabling human agency in shared decision-making for assistive robotics\ntechnology to support PWLEF?;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "J", "color": "red", "id": "Jims Marchang", "institution": "Sheffield Hallam University", "label": "Jims Marchang", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Jims Marchang\nInstitution: Sheffield Hallam University\nJob Title: Sr Lecturer in Cybersecurity\nSpecialty: Computer Science\nLocation: Sheffield\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "J", "color": "blue", "id": "Joy Egede", "institution": "University of Nottingham", "label": "Joy Egede", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Joy Egede\nInstitution: University of Nottingham\nJob Title: Assistant Professor\nSpecialty: Robotics\nLocation: Nottingham\nResearch themes of interest: \n\nBenchmarking datasets to support the development of accessible HRI;Regulatory Frameworks for\ndeployment and integration of assistive robotics;Accessible Human-Robot Interaction, taking into\nconsideration multi-modal and intuitive interaction to address cognitive, sensory and physical\nimpairments;Scoping research:\u00a0When does an assistive robot become a medical device?;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "K", "color": "red", "id": "Kheng Lee Koay", "institution": "University of Hertfordshire", "label": "Kheng Lee Koay", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Kheng Lee Koay\nInstitution: University of Hertfordshire\nJob Title: Senior Lecturer\nSpecialty: Computer Science\nLocation: Hertfordshire\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Healthcare", "alphabet": "K", "color": "yellow", "id": "Kia Nazarpour", "institution": "The University of Edinburgh ", "label": "Kia Nazarpour", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Kia Nazarpour\nInstitution: The University of Edinburgh \nJob Title: Professor of Digital Health\nSpecialty: Healthcare\nLocation: Edinburgh\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Benchmarking datasets to support the\ndevelopment of accessible HRI;Ethical frameworks for integration of assistive robotics;Scoping\nresearch:\u00a0What are the challenges for enabling human agency in shared decision-making for assistive\nrobotics technology to support people with lived experience of frailty?;Regulatory Frameworks for\ndeployment and integration of assistive robotics;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "L", "color": "blue", "id": "Luis Figueredo", "institution": "University of Nottingham", "label": "Luis Figueredo", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Luis Figueredo\nInstitution: University of Nottingham\nJob Title: Senior Scientist / Incoming Assist. Prof.\nSpecialty: Robotics\nLocation: Nottingham\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at people with lived experience of\nfrailty to enable long-term autonomy\u00a0including areas such as fail-safe design, situation awareness,\nautomated risk assessment and smart sensing.;Scoping research:\u00a0What CPD is needed to support future\ncare professionals?;Accessible Human-Robot Interaction, taking into consideration multi-modal and\nintuitive interaction to address cognitive, sensory and physical impairments;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "M", "color": "red", "id": "Magan Moemeni ", "institution": "University of Nottingham ", "label": "Magan Moemeni ", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Magan Moemeni \nInstitution: University of Nottingham \nJob Title: Assistant Professor - Computer Science \nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "M", "color": "blue", "id": "Mahdi Bodaghi", "institution": "Nottingham Trent University", "label": "Mahdi Bodaghi", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Mahdi Bodaghi\nInstitution: Nottingham Trent University\nJob Title: Senior Lecturer\nSpecialty: Robotics\nLocation: Nottingham\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at PWLEF to enable long-term\nautonomy\u00a0including areas such as fail-safe design, situation awareness, automated risk assessment\nand smart sensing.;Accessible Human-Robot Interaction, taking into consideration multi-modal and\nintuitive interaction to address cognitive, sensory and physical impairments;Regulatory Frameworks\nfor deployment and integration of assistive robotics;Benchmarking datasets to support the\ndevelopment of accessible HRI;Ethical frameworks for integration of assistive robotics;Scoping\nresearch:\u00a0When does an assistive robot become a medical device?;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "M", "color": "blue", "id": "Manal Helal", "institution": "Hertfordshire University", "label": "Manal Helal", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Manal Helal\nInstitution: Hertfordshire University\nJob Title: Lecturer\nSpecialty: Robotics\nLocation: Hertfordshire\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Scoping research:\u00a0When does an assistive\nrobot become a medical device?;Scoping research:\u00a0What CPD is needed to support future care\nprofessionals?;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "M", "color": "blue", "id": "Maria Elena Giannaccini", "institution": "University of Aberdeen ", "label": "Maria Elena Giannaccini", "location": "Aberdeen", "physics": true, "shape": "dot", "size": 10, "title": "Name: Maria Elena Giannaccini\nInstitution: University of Aberdeen \nJob Title: Lecturer in Robotics \nSpecialty: Robotics\nLocation: Aberdeen\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at people with lived experience of\nfrailty to enable long-term autonomy\u00a0including areas such as fail-safe design, situation awareness,\nautomated risk assessment and smart sensing.;Accessible Human-Robot Interaction, taking into\nconsideration multi-modal and intuitive interaction to address cognitive, sensory and physical\nimpairments;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "M", "color": "blue", "id": "Maria Jose Galvez Trigo", "institution": "Cardiff University", "label": "Maria Jose Galvez Trigo", "location": "Cardiff", "physics": true, "shape": "dot", "size": 10, "title": "Name: Maria Jose Galvez Trigo\nInstitution: Cardiff University\nJob Title: Lecturer\nSpecialty: Robotics\nLocation: Cardiff\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Regulatory Frameworks for deployment and\nintegration of assistive robotics;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "M", "color": "red", "id": "Maria Luisa Davila Garcia", "institution": "Sheffield Hallam University", "label": "Maria Luisa Davila Garcia", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Maria Luisa Davila Garcia\nInstitution: Sheffield Hallam University\nJob Title: Lecturer in AI\nSpecialty: Computer Science\nLocation: Sheffield\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "M", "color": "blue", "id": "Muneeb Imtiaz Ahmad", "institution": "Swansea University", "label": "Muneeb Imtiaz Ahmad", "location": "Swansea", "physics": true, "shape": "dot", "size": 10, "title": "Name: Muneeb Imtiaz Ahmad\nInstitution: Swansea University\nJob Title: Senior Lecturer\nSpecialty: Robotics\nLocation: Swansea\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Scoping research:\u00a0When does an assistive\nrobot become a medical device?;Scoping research:\u00a0What CPD is needed to support future care\nprofessionals?;Scoping research:\u00a0What are the challenges for enabling human agency in shared\ndecision-making for assistive robotics technology to support PWLEF?;Safety frameworks for assistive\nrobotics technologies aimed at PWLEF to enable long-term autonomy\u00a0including areas such as fail-safe\ndesign, situation awareness, automated risk assessment and smart sensing.;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "O", "color": "blue", "id": "Oya Celiktutan", "institution": "King\u0027s College London", "label": "Oya Celiktutan", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Oya Celiktutan\nInstitution: King\u0027s College London\nJob Title: Senior Lecturer in Robotics\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at PWLEF to enable long-term\nautonomy\u00a0including areas such as fail-safe design, situation awareness, automated risk assessment\nand smart sensing.;Accessible Human-Robot Interaction, taking into consideration multi-modal and\nintuitive interaction to address cognitive, sensory and physical impairments;Benchmarking datasets\nto support the development of accessible HRI;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "P", "color": "red", "id": "Patricia Shaw", "institution": "Aberystwyth University", "label": "Patricia Shaw", "location": "Aberstwyth", "physics": true, "shape": "dot", "size": 10, "title": "Name: Patricia Shaw\nInstitution: Aberystwyth University\nJob Title: Senior Lecturer\nSpecialty: Computer Science\nLocation: Aberstwyth\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "P", "color": "blue", "id": "Prapa Rattadilok", "institution": "University of Hertfordshire", "label": "Prapa Rattadilok", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Prapa Rattadilok\nInstitution: University of Hertfordshire\nJob Title: Principal Lecturer\nSpecialty: Robotics\nLocation: Hertfordshire\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at people with lived experience of\nfrailty to enable long-term autonomy\u00a0including areas such as fail-safe design, situation awareness,\nautomated risk assessment and smart sensing.;Scoping research:\u00a0What are the challenges for enabling\nhuman agency in shared decision-making for assistive robotics technology to support people with\nlived experience of frailty?;Scoping research:\u00a0What CPD is needed to support future care\nprofessionals?;Scoping research:\u00a0When does an assistive robot become a medical device?;Accessible\nHuman-Robot Interaction, taking into consideration multi-modal and intuitive interaction to address\ncognitive, sensory and physical impairments;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "S", "color": "blue", "id": "Shabnam Sadeghi Esfahlani", "institution": "Anglia Ruskin University", "label": "Shabnam Sadeghi Esfahlani", "location": "Cambridge", "physics": true, "shape": "dot", "size": 10, "title": "Name: Shabnam Sadeghi Esfahlani\nInstitution: Anglia Ruskin University\nJob Title: Associate Professor in Mechatronics and AI\nSpecialty: Robotics\nLocation: Cambridge\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "S", "color": "blue", "id": "S\u00edlvia Moros", "institution": "University of Hertfordshire", "label": "S\u00edlvia Moros", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: S\u00edlvia Moros\nInstitution: University of Hertfordshire\nJob Title: Lecturer\nSpecialty: Robotics\nLocation: Hertfordshire\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Ethical frameworks for integration of\nassistive robotics;Scoping research:\u00a0When does an assistive robot become a medical device?;Scoping\nresearch:\u00a0What CPD is needed to support future care professionals?;Scoping research:\u00a0What are the\nchallenges for enabling human agency in shared decision-making for assistive robotics technology to\nsupport people with lived experience of frailty?;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "S", "color": "red", "id": "Steven Bojilov", "institution": "Heriot-Watt University", "label": "Steven Bojilov", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Steven Bojilov\nInstitution: Heriot-Watt University\nJob Title: Student\nSpecialty: Computer Science\nLocation: Edinburgh\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "Y", "color": "red", "id": "Yangang Xing", "institution": "Nottingham Trent University", "label": "Yangang Xing", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Yangang Xing\nInstitution: Nottingham Trent University\nJob Title: Associate Professor\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "L", "color": "blue", "id": "Lin Cao", "institution": "University of Sheffield", "label": "Lin Cao", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Lin Cao\nInstitution: University of Sheffield\nJob Title: Lecturer in Medical Robotics\nSpecialty: Robotics\nLocation: Sheffield\nResearch themes of interest: \n\nMy research is focused on soft/flexible robots and how they can be applied to medical robots. I\nenvision that assistive soft robotics may play an active role in assisting Parkinson\u0027s patients in\ncompleting daily tasks. For instance, a soft robotic sleeve may be able to compensate for the tremor\nmotion of the patient\u0027s hand and meanwhile allow the patient to practice their control/use of\nmuscles.\n", "value": 1}, {"Specialty": "Healthcare", "alphabet": "M", "color": "yellow", "id": "Manish Chauhan", "institution": "University of York", "label": "Manish Chauhan", "location": "York", "physics": true, "shape": "dot", "size": 10, "title": "Name: Manish Chauhan\nInstitution: University of York\nJob Title: Lecturer in Medical Engineering\nSpecialty: Healthcare\nLocation: York\nResearch themes of interest: \n\nSoft Robotics, Optical imaging, Bio-imaging and optical fibres, Mechatronics, Novel materials, MRI\nTechnology and data analytics.\n", "value": 1}, {"Specialty": "Physiotherapy", "alphabet": "P", "color": "orange", "id": "Praveen Kumar", "institution": "University of the West of England", "label": "Praveen Kumar", "location": "Bristol", "physics": true, "shape": "dot", "size": 10, "title": "Name: Praveen Kumar\nInstitution: University of the West of England\nJob Title: Senior Lecturer in Physiotherapy \nSpecialty: Physiotherapy\nLocation: Bristol\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at people with lived experience of\nfrailty to enable long-term autonomy\u00a0including areas such as fail-safe design, situation awareness,\nautomated risk assessment and smart sensing.;Accessible Human-Robot Interaction, taking into\nconsideration multi-modal and intuitive interaction to address cognitive, sensory and physical\nimpairments;Regulatory Frameworks for deployment and integration of assistive robotics;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "S", "color": "blue", "id": "Sanja Dogramadzi", "institution": "University of Sheffield", "label": "Sanja Dogramadzi", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Sanja Dogramadzi\nInstitution: University of Sheffield\nJob Title: Professor of Medical Robotics\nSpecialty: Robotics\nLocation: Sheffield\nResearch themes of interest: \n\nI am interested in assistive robotics for physical assistance and safe human-robot interaction. This\ninterest spans from design and control to multi-modal human-robot interaction and uncertainties\nquantification and modelling.\n", "value": 1}, {"Specialty": "Electronic Engineering", "alphabet": "A", "color": "magenta", "id": "Augustine Ikpehai", "institution": "Sheffield Hallam University", "label": "Augustine Ikpehai", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Augustine Ikpehai\nInstitution: Sheffield Hallam University\nJob Title: Senior Lecturer, Electronic Engineering\nSpecialty: Electronic Engineering\nLocation: Sheffield\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Electronic Engineering", "alphabet": "P", "color": "magenta", "id": "Panos Panagiotou", "institution": "University of Sheffield", "label": "Panos Panagiotou", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Panos Panagiotou\nInstitution: University of Sheffield\nJob Title: Lecturer in Electrical Machines \u0026 Drives\nSpecialty: Electronic Engineering\nLocation: Sheffield\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Healthcare", "alphabet": "A", "color": "yellow", "id": "Aoife Lehane ", "institution": "Nhs", "label": "Aoife Lehane ", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Aoife Lehane \nInstitution: Nhs\nJob Title: Nhs\nSpecialty: Healthcare\nLocation: London\nResearch themes of interest: \n\nScoping research:\u00a0What CPD is needed to support future care professionals?;Scoping research:\u00a0What\nare the challenges for enabling human agency in shared decision-making for assistive robotics\ntechnology to support people with lived experience of frailty?;\n", "value": 1}, {"Specialty": "Healthcare", "alphabet": "E", "color": "yellow", "id": "Emma Perfect", "institution": "Heriot Watt University", "label": "Emma Perfect", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Emma Perfect\nInstitution: Heriot Watt University\nJob Title: Business Development Manager - Health and Care\nSpecialty: Healthcare\nLocation: Edinburgh\nResearch themes of interest: \n\nI have a PhD in molecular biology and 19 years working in starts ups (in biotechnology, medical\ndevices and chemical monitoring). I have recently joined Heriot Watt University as a Business\nDevelopment Manager in Health and Care and seek to better understand this ecosystem and current\ndevelopments including robotic solutions.\n", "value": 1}, {"Specialty": "Healthcare", "alphabet": "M", "color": "yellow", "id": "Michelle Beukes", "institution": "Heriot-Watt University", "label": "Michelle Beukes", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Michelle Beukes\nInstitution: Heriot-Watt University\nJob Title: Business Development Manager - Health and Care Engineering\nSpecialty: Healthcare\nLocation: Edinburgh\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "T", "color": "blue", "id": "Tien Thuy Quach", "institution": "University of Nottingham ", "label": "Tien Thuy Quach", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Tien Thuy Quach\nInstitution: University of Nottingham \nJob Title: PhD Reseacher \u0026 Healthcare Assistant \nSpecialty: Robotics\nLocation: Nottingham\nResearch themes of interest: \n\nRegulatory Frameworks for deployment and integration of assistive robotics;Scoping research:\u00a0When\ndoes an assistive robot become a medical device?;Scoping research:\u00a0What CPD is needed to support\nfuture care professionals?;Scoping research:\u00a0What are the challenges for enabling human agency in\nshared decision-making for assistive robotics technology to support people with lived experience of\nfrailty?;Safety frameworks for assistive robotics technologies aimed at people with lived experience\nof frailty to enable long-term autonomy\u00a0including areas such as fail-safe design, situation\nawareness, automated risk assessment and smart sensing.;Benchmarking datasets to support the\ndevelopment of accessible HRI;Ethical frameworks for integration of assistive robotics;Accessible\nHuman-Robot Interaction, taking into consideration multi-modal and intuitive interaction to address\ncognitive, sensory and physical impairments;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "A", "color": "blue", "id": "Alexandre Colle", "institution": "Konpanion (BOROBO ltd)", "label": "Alexandre Colle", "location": "Glasgow", "physics": true, "shape": "dot", "size": 10, "title": "Name: Alexandre Colle\nInstitution: Konpanion (BOROBO ltd)\nJob Title: CEO\nSpecialty: Robotics\nLocation: Glasgow\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at PWLEF to enable long-term\nautonomy\u00a0including areas such as fail-safe design, situation awareness, automated risk assessment\nand smart sensing.;Accessible Human-Robot Interaction, taking into consideration multi-modal and\nintuitive interaction to address cognitive, sensory and physical impairments;Ethical frameworks for\nintegration of assistive robotics;Scoping research:\u00a0When does an assistive robot become a medical\ndevice?;Scoping research:\u00a0What are the challenges for enabling human agency in shared decision-\nmaking for assistive robotics technology to support PWLEF?;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "A", "color": "red", "id": "Amol Deshmukh", "institution": "University of Glasgow", "label": "Amol Deshmukh", "location": "Glasgow", "physics": true, "shape": "dot", "size": 10, "title": "Name: Amol Deshmukh\nInstitution: University of Glasgow\nJob Title: Research Associate\nSpecialty: Computer Science\nLocation: Glasgow\nResearch themes of interest: \n\nI am post-doc working in the area of social robotics and AI. We are developing a social robotic\ndevice to educate, monitor and encourage handwashing for children in schools with a potential to\nscale to other applications in social care, hospitals, hospitality and the food industry.  I am\ninterested to learn more about Emergence Project and form collaboration/partnerships  with other\nresearch groups.\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "A", "color": "blue", "id": "Angela Dickinson", "institution": "University of Hertfordshire", "label": "Angela Dickinson", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Angela Dickinson\nInstitution: University of Hertfordshire\nJob Title: Senior Research Fellow\nSpecialty: Robotics\nLocation: Hertfordshire\nResearch themes of interest: \n\nI\u0027m interested in how technology could support people to be independent for longer in relation to\nfood security.\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "A", "color": "blue", "id": "Angela Higgins ", "institution": "University of Nottingham ", "label": "Angela Higgins ", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Angela Higgins \nInstitution: University of Nottingham \nJob Title: PhD Student \nSpecialty: Robotics\nLocation: Nottingham\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Ethical frameworks for integration of\nassistive robotics;Scoping research:\u00a0When does an assistive robot become a medical device?;\n", "value": 1}, {"Specialty": "Healthcare", "alphabet": "A", "color": "yellow", "id": "Anna Maria Piskopani", "institution": "University of Nottingham", "label": "Anna Maria Piskopani", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Anna Maria Piskopani\nInstitution: University of Nottingham\nJob Title: Research Fellow in IT law at the Horizon Institute of Digital Economy\nSpecialty: Healthcare\nLocation: Nottingham\nResearch themes of interest: \n\nI am a human rights expert. I have former experience working as a lawyer in implementing GDPR in the\nhealth and care sector. My research interests are legal, regulatory and ethical issues that can be\nraised by using autonomous systems in every day life.  I am currently working on the project Open\nAll senses (Agile 2021-2022) about social robots used in museums and health care sector and three\nTAS projects Co-Design of Context-Aware Trustworthy Audio Capture (TAS) (May 2022). The citizen\ncarbon budget (TAS) (May 2022). RRI and art project (TAS) (May 2022).\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "B", "color": "blue", "id": "Ben Clarke", "institution": "University of Sheffield", "label": "Ben Clarke", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Ben Clarke\nInstitution: University of Sheffield\nJob Title: Research Associate\nSpecialty: Robotics\nLocation: Sheffield\nResearch themes of interest: \n\nMy research interests are around tribology (friction, wear \u0026 lubrication) in both robotics and human\ninteractions. Our group\u2019s specialties lie in understanding soft material contacts. A key\ncontribution area for us would be understanding the important factors in the interaction between a\nrobot and frail patient, but this could expand to robot-object interactions or internal interactions\nin the robot if challenging areas arise here. These robots would likely be graspers \u0026 manipulators\nor robotic support structures. Activities could include informing design using our current knowledge\nor creating test methods, platforms and models for more detailed understanding or more specific\napplications.\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "B", "color": "red", "id": "Burak Kizilkaya", "institution": "University of Glasgow", "label": "Burak Kizilkaya", "location": "Glasgow", "physics": true, "shape": "dot", "size": 10, "title": "Name: Burak Kizilkaya\nInstitution: University of Glasgow\nJob Title: PhD Student\nSpecialty: Computer Science\nLocation: Glasgow\nResearch themes of interest: \n\nMy current research interests include communication-control co-design, ultra-reliable low-latency\ncommunications (URLLC), and real-time wireless control considering mission-critical robotic\napplication areas such as healthcare, and social care.\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "C", "color": "blue", "id": "Carl Bettosi", "institution": "Edinburgh Centre for Robotics", "label": "Carl Bettosi", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Carl Bettosi\nInstitution: Edinburgh Centre for Robotics\nJob Title: PhD Student\nSpecialty: Robotics\nLocation: Edinburgh\nResearch themes of interest: \n\nMy research looks to develop socially assistive robots to aid with exercise promotion/physiotherapy.\nSpecifically, I look to use machine learning to learn optimal behavioural policies for robots, that\ncan adapt to the changing therapeutic needs of the user. We believe this will help improve user\nengagement, while delivering health benefits.\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "C", "color": "blue", "id": "Christina Elizabeth Stimson", "institution": "The University of Sheffield", "label": "Christina Elizabeth Stimson", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Christina Elizabeth Stimson\nInstitution: The University of Sheffield\nJob Title: PhD Candidate\nSpecialty: Robotics\nLocation: Sheffield\nResearch themes of interest: \n\nEthical frameworks for integration of assistive robotics;Scoping research:\u00a0What are the challenges\nfor enabling human agency in shared decision-making for assistive robotics technology to support\npeople with lived experience of frailty?;Regulatory Frameworks for deployment and integration of\nassistive robotics;Accessible Human-Robot Interaction, taking into consideration multi-modal and\nintuitive interaction to address cognitive, sensory and physical impairments;Benchmarking datasets\nto support the development of accessible HRI;Scoping research:\u00a0When does an assistive robot become a\nmedical device?;Safety frameworks for assistive robotics technologies aimed at people with lived\nexperience of frailty to enable long-term autonomy\u00a0including areas such as fail-safe design,\nsituation awareness, automated risk assessment and smart sensing.;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "C", "color": "blue", "id": "Christopher Harper", "institution": "University of the West of England, Bristol ", "label": "Christopher Harper", "location": "Bristol", "physics": true, "shape": "dot", "size": 10, "title": "Name: Christopher Harper\nInstitution: University of the West of England, Bristol \nJob Title: Senior Research Fellow, Bristol Robotics Lab\nSpecialty: Robotics\nLocation: Bristol\nResearch themes of interest: \n\nRegulatory Frameworks for deployment and integration of assistive robotics;Safety frameworks for\nassistive robotics technologies aimed at people with lived experience of frailty to enable long-term\nautonomy\u00a0including areas such as fail-safe design, situation awareness, automated risk assessment\nand smart sensing.;Accessible Human-Robot Interaction, taking into consideration multi-modal and\nintuitive interaction to address cognitive, sensory and physical impairments;Ethical frameworks for\nintegration of assistive robotics;Scoping research:\u00a0When does an assistive robot become a medical\ndevice?;Scoping research:\u00a0What are the challenges for enabling human agency in shared decision-\nmaking for assistive robotics technology to support people with lived experience of frailty?;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "C", "color": "blue", "id": "Cian O\u0027Donovan", "institution": "UCL", "label": "Cian O\u0027Donovan", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Cian O\u0027Donovan\nInstitution: UCL\nJob Title: Senior Research Fellow\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nI\u0027m lead investigator on the EMERGENCE adjacent project \"Empowering future care workforces: Scoping\nCapabilities to Leverage Assistive Robotics through Co-Design\"\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "D", "color": "blue", "id": "Damla Kilic", "institution": "University of Nottingham", "label": "Damla Kilic", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Damla Kilic\nInstitution: University of Nottingham\nJob Title: Teaching Associate\nSpecialty: Robotics\nLocation: Nottingham\nResearch themes of interest: \n\nRegulatory Frameworks for deployment and integration of assistive robotics;Accessible Human-Robot\nInteraction, taking into consideration multi-modal and intuitive interaction to address cognitive,\nsensory and physical impairments;Ethical frameworks for integration of assistive robotics;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "D", "color": "blue", "id": "Daniel Hernandez Garcia", "institution": "Heriot-Watt University", "label": "Daniel Hernandez Garcia", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Daniel Hernandez Garcia\nInstitution: Heriot-Watt University\nJob Title: Research Associate\nSpecialty: Robotics\nLocation: Edinburgh\nResearch themes of interest: \n\nI am a postdoctoral associate at HWU, my research is focused on developing socially aware robots\nwith the capacity for cognitive interactions, with a particular emphasis on bringing socially\nassistive robots into assisted living and gerontological healthcare.  My goal is using socially\nassistive robots to provide companionship and to tackle isolation and loneliness for older adults,\nand for identifying early signs of frailty and mild cognitive impairment (MCI) by transparently\nmonitoring physical and cognitive decline to help carers in the early identification of symptoms,\ncould have enormous social impact for assisted living for older adults and quality ageing in place.\n", "value": 1}, {"Specialty": "Healthcare", "alphabet": "E", "color": "yellow", "id": "Emilyann Nault", "institution": "Heriot-Watt University \u0026 University of Edinburgh", "label": "Emilyann Nault", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Emilyann Nault\nInstitution: Heriot-Watt University \u0026 University of Edinburgh\nJob Title: PhD Student - Robotics \u0026 Autonomous Systems Centre for Doctoral Training\nSpecialty: Healthcare\nLocation: Edinburgh\nResearch themes of interest: \n\nThe aim of my doctoral research is to engage older adults in cognitive activities prior to the onset\nof age-related conditions (e.g., mild cognitive impairment and dementia) through the use of socially\nassistive robots and sensory feedback. Participatory Design methodologies have been employed in\norder to invite end users and relevant stakeholders (e.g., therapists) to be part of the design\nprocess. User studies have also been integrated to receive feedback from older adults directly.\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "F", "color": "blue", "id": "Feng Zhou", "institution": "MRL / the University of Nottingham", "label": "Feng Zhou", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Feng Zhou\nInstitution: MRL / the University of Nottingham\nJob Title: PhD\nSpecialty: Robotics\nLocation: Nottingham\nResearch themes of interest: \n\nI aim to extend the generative co-design system and deepen its impact by applying it to personalise\na variety of assistive devices (or robots). Current devices are often rejected due to being ill-\nfitted to individuals and aesthetically ugly. I intend to lay the foundations for people to co-\ndesign their personalised assistive devices, from mobility aids to adapted crockery, furniture and\nother rehabilitation products.\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "H", "color": "red", "id": "Hassan Zaal", "institution": "University of Nottingham", "label": "Hassan Zaal", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Hassan Zaal\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "J", "color": "blue", "id": "Joseph Bolarinwa", "institution": "University of the West of England, Bristol", "label": "Joseph Bolarinwa", "location": "Bristol", "physics": true, "shape": "dot", "size": 10, "title": "Name: Joseph Bolarinwa\nInstitution: University of the West of England, Bristol\nJob Title: Research Associate\nSpecialty: Robotics\nLocation: Bristol\nResearch themes of interest: \n\nI am interested in understanding how researchers have tackled the different challenges of using\nassistive robots in  improving service deliveries.\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "L", "color": "blue", "id": "Lyuba Alboul", "institution": "Sheffield Hallam University", "label": "Lyuba Alboul", "location": "Sheffield", "physics": true, "shape": "dot", "size": 10, "title": "Name: Lyuba Alboul\nInstitution: Sheffield Hallam University\nJob Title: Senior Research Fellow\nSpecialty: Robotics\nLocation: Sheffield\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Safety frameworks for assistive robotics\ntechnologies aimed at people with lived experience of frailty to enable long-term autonomy\u00a0including\nareas such as fail-safe design, situation awareness, automated risk assessment and smart\nsensing.;Regulatory Frameworks for deployment and integration of assistive robotics;Scoping\nresearch:\u00a0What are the challenges for enabling human agency in shared decision-making for assistive\nrobotics technology to support people with lived experience of frailty?;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "M", "color": "blue", "id": "Marina Sarda Gou", "institution": "University of Hertfordshire", "label": "Marina Sarda Gou", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Marina Sarda Gou\nInstitution: University of Hertfordshire\nJob Title: Research Fellow\nSpecialty: Robotics\nLocation: Hertfordshire\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at people with lived experience of\nfrailty to enable long-term autonomy\u00a0including areas such as fail-safe design, situation awareness,\nautomated risk assessment and smart sensing.;Accessible Human-Robot Interaction, taking into\nconsideration multi-modal and intuitive interaction to address cognitive, sensory and physical\nimpairments;Regulatory Frameworks for deployment and integration of assistive robotics;Ethical\nframeworks for integration of assistive robotics;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "M", "color": "blue", "id": "Matthew Story", "institution": "University of Lincoln", "label": "Matthew Story", "location": "Lincoln", "physics": true, "shape": "dot", "size": 10, "title": "Name: Matthew Story\nInstitution: University of Lincoln\nJob Title: Postdoctoral Research Associate\nSpecialty: Robotics\nLocation: Lincoln\nResearch themes of interest: \n\nA key area of my research interests is the support for care home staff and residents through\nrobotics and technology. By collaborating with end-users throughout research, I believe the system\ncan be implemented more successfully to improve the physical and mental wellbeing of both staff and\nresidents in care homes.\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "N", "color": "blue", "id": "Nathalia Cespedes Gomez", "institution": "Queen Mary University of London", "label": "Nathalia Cespedes Gomez", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Nathalia Cespedes Gomez\nInstitution: Queen Mary University of London\nJob Title: PhD Student\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Scoping research:\u00a0What are the challenges for\nenabling human agency in shared decision-making for assistive robotics technology to support people\nwith lived experience of frailty?;Regulatory Frameworks for deployment and integration of assistive\nrobotics;Ethical frameworks for integration of assistive robotics;Scoping research:\u00a0When does an\nassistive robot become a medical device?;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "N", "color": "blue", "id": "Nathan Jones", "institution": "Cardiff University", "label": "Nathan Jones", "location": "Cardiff", "physics": true, "shape": "dot", "size": 10, "title": "Name: Nathan Jones\nInstitution: Cardiff University\nJob Title: PhD Student\nSpecialty: Robotics\nLocation: Cardiff\nResearch themes of interest: \n\nMy research interests are primarily around socially assistive robots and how they can be adapted in\norder to increase acceptance and adoption, particularly among the elderly or otherwise vulnerable. I\nam also interested in ways that modern technology can be utilized in order to increase quality of\nlife and allow vulnerable people to live independently in cases where they would usually need a care\nworker\u0027s full time attention.\n", "value": 1}, {"Specialty": "Healthcare", "alphabet": "N", "color": "yellow", "id": "Neil Chadborn", "institution": "University of Nottingham", "label": "Neil Chadborn", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Neil Chadborn\nInstitution: University of Nottingham\nJob Title: Research fellow\nSpecialty: Healthcare\nLocation: Nottingham\nResearch themes of interest: \n\nSupporting people with dementia in the community - developing a way to share appropriate information\nabout an individual with cognitive impairment to community services and activities so that\nindividual needs can be accommodated.\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "N", "color": "blue", "id": "Nguyen Tan Viet Tuyen", "institution": "King\u0027s College London", "label": "Nguyen Tan Viet Tuyen", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Nguyen Tan Viet Tuyen\nInstitution: King\u0027s College London\nJob Title: Research Associate\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at people with lived experience of\nfrailty to enable long-term autonomy\u00a0including areas such as fail-safe design, situation awareness,\nautomated risk assessment and smart sensing.;Accessible Human-Robot Interaction, taking into\nconsideration multi-modal and intuitive interaction to address cognitive, sensory and physical\nimpairments;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "P", "color": "blue", "id": "Patrick Holthaus", "institution": "University of Hertfordshire", "label": "Patrick Holthaus", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Patrick Holthaus\nInstitution: University of Hertfordshire\nJob Title: Senior Research Fellow\nSpecialty: Robotics\nLocation: Hertfordshire\nResearch themes of interest: \n\nI am already involved in EMERGENCE and would like to join the workshops from the UH perspective. My\nresearch interests are within social and assistive robotics.\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "P", "color": "blue", "id": "Peter Waggett", "institution": "IBM UK Ltd", "label": "Peter Waggett", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Peter Waggett\nInstitution: IBM UK Ltd\nJob Title: Research Director\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nUse of AI and Robotics\n", "value": 1}, {"Specialty": "Healthcare", "alphabet": "R", "color": "yellow", "id": "Ricardo Contreras", "institution": "University of Edinburgh", "label": "Ricardo Contreras", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Ricardo Contreras\nInstitution: University of Edinburgh\nJob Title: Research Assistant\nSpecialty: Healthcare\nLocation: Edinburgh\nResearch themes of interest: \n\nInterested in activities of daily living and people in their later days\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "S", "color": "blue", "id": "Siabhainn Russell", "institution": "UCL", "label": "Siabhainn Russell", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Siabhainn Russell\nInstitution: UCL\nJob Title: Research Fellow\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nMy research interests revolve around the factors needed to provide successful, better support for\nindividuals in the health and home context including the use of robotics and assistive technologies\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "M", "color": "blue", "id": "Marianthi Leon", "institution": "UWE", "label": "Marianthi Leon", "location": "Bristol", "physics": true, "shape": "dot", "size": 10, "title": "Name: Marianthi Leon\nInstitution: UWE\nJob Title: AHoD on Research\nSpecialty: Robotics\nLocation: Bristol\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Scoping research:\u00a0What are the challenges for\nenabling human agency in shared decision-making for assistive robotics technology to support people\nwith lived experience of frailty?;Regulatory Frameworks for deployment and integration of assistive\nrobotics;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "A", "color": "red", "id": "Adrian Smales", "institution": "Smplicare Ltd", "label": "Adrian Smales", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Adrian Smales\nInstitution: Smplicare Ltd\nJob Title: Chief Information Officer\nSpecialty: Computer Science\nLocation: Edinburgh\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Social Care", "alphabet": "A", "color": "purple", "id": "Amanda Ashworth", "institution": "Skills for Care", "label": "Amanda Ashworth", "location": "Leeds", "physics": true, "shape": "dot", "size": 10, "title": "Name: Amanda Ashworth\nInstitution: Skills for Care\nJob Title: Project Manager - workforce capacity\nSpecialty: Social Care\nLocation: Leeds\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "A", "color": "blue", "id": "Andrew Conroy", "institution": "Astraline TEC Ltd a Johnnie Johnson business", "label": "Andrew Conroy", "location": "Manchester", "physics": true, "shape": "dot", "size": 10, "title": "Name: Andrew Conroy\nInstitution: Astraline TEC Ltd a Johnnie Johnson business\nJob Title: Commercial Director\nSpecialty: Robotics\nLocation: Manchester\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Healthcare", "alphabet": "A", "color": "yellow", "id": "Anna daley", "institution": "Archus", "label": "Anna daley", "location": "Bristol", "physics": true, "shape": "dot", "size": 10, "title": "Name: Anna daley\nInstitution: Archus\nJob Title: Associate Director\nSpecialty: Healthcare\nLocation: Bristol\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "C", "color": "red", "id": "Chris Foreman", "institution": "PIRg Herts Uni", "label": "Chris Foreman", "location": "Hertfordshire", "physics": true, "shape": "dot", "size": 10, "title": "Name: Chris Foreman\nInstitution: PIRg Herts Uni\nJob Title: Public input \nSpecialty: Computer Science\nLocation: Hertfordshire\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "D", "color": "blue", "id": "Daniel Camilleri", "institution": "BOW (formerly Cyberselves)", "label": "Daniel Camilleri", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Daniel Camilleri\nInstitution: BOW (formerly Cyberselves)\nJob Title: CEO\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Regulatory Frameworks for deployment and\nintegration of assistive robotics;Safety frameworks for assistive robotics technologies aimed at\npeople with lived experience of frailty to enable long-term autonomy\u00a0including areas such as fail-\nsafe design, situation awareness, automated risk assessment and smart sensing.;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "G", "color": "blue", "id": "Godfrey Inyama ", "institution": "Oval Design ", "label": "Godfrey Inyama ", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Godfrey Inyama \nInstitution: Oval Design \nJob Title: Web Developer \nSpecialty: Robotics\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "J", "color": "blue", "id": "Joe McLoughlin", "institution": "Astraline TEC Ltd a Johnnie Johnson Housing business", "label": "Joe McLoughlin", "location": "Manchester", "physics": true, "shape": "dot", "size": 10, "title": "Name: Joe McLoughlin\nInstitution: Astraline TEC Ltd a Johnnie Johnson Housing business\nJob Title: Managing Director\nSpecialty: Robotics\nLocation: Manchester\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "M", "color": "red", "id": "Martin de heave", "institution": "ORBIT RRI", "label": "Martin de heave", "location": "Leicester", "physics": true, "shape": "dot", "size": 10, "title": "Name: Martin de heave\nInstitution: ORBIT RRI\nJob Title: Director \nSpecialty: Computer Science\nLocation: Leicester\nResearch themes of interest: \n\nAccessible Human-Robot Interaction, taking into consideration multi-modal and intuitive interaction\nto address cognitive, sensory and physical impairments;Regulatory Frameworks for deployment and\nintegration of assistive robotics;Ethical frameworks for integration of assistive robotics;Scoping\nresearch:\u00a0When does an assistive robot become a medical device?;\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "M", "color": "red", "id": "Michael Gray", "institution": "University of Edinburgh", "label": "Michael Gray", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Michael Gray\nInstitution: University of Edinburgh\nJob Title: Implementation Lead - HSCDDI\nSpecialty: Computer Science\nLocation: Edinburgh\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "N", "color": "red", "id": "Nicola Cooper", "institution": "Scottish Care", "label": "Nicola Cooper", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: Nicola Cooper\nInstitution: Scottish Care\nJob Title: Technology and Digital Innovation Lead\nSpecialty: Computer Science\nLocation: Edinburgh\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "S", "color": "blue", "id": "Shirley Sherwood", "institution": "PIRG ", "label": "Shirley Sherwood", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Shirley Sherwood\nInstitution: PIRG \nJob Title: Volunteer Co-Chair PPI\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "S", "color": "red", "id": "Simon Castle-Green", "institution": "University of Nottingham", "label": "Simon Castle-Green", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Simon Castle-Green\nInstitution: University of Nottingham\nJob Title: Technical Manager\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "W", "color": "blue", "id": "William Wright", "institution": "Blackwood Homes and Care", "label": "William Wright", "location": "Edinburgh", "physics": true, "shape": "dot", "size": 10, "title": "Name: William Wright\nInstitution: Blackwood Homes and Care\nJob Title: Project Lead, Innovation\nSpecialty: Robotics\nLocation: Edinburgh\nResearch themes of interest: \n\nSafety frameworks for assistive robotics technologies aimed at people with lived experience of\nfrailty to enable long-term autonomy\u00a0including areas such as fail-safe design, situation awareness,\nautomated risk assessment and smart sensing.;Accessible Human-Robot Interaction, taking into\nconsideration multi-modal and intuitive interaction to address cognitive, sensory and physical\nimpairments;Regulatory Frameworks for deployment and integration of assistive robotics;Ethical\nframeworks for integration of assistive robotics;Scoping research:\u00a0When does an assistive robot\nbecome a medical device?;Scoping research:\u00a0What CPD is needed to support future care professionals?;\n", "value": 1}, {"Specialty": "Robotics", "alphabet": "A", "color": "blue", "id": "Artur Romero Hazas", "institution": "BranchRobotics", "label": "Artur Romero Hazas", "location": "London", "physics": true, "shape": "dot", "size": 10, "title": "Name: Artur Romero Hazas\nInstitution: BranchRobotics\nJob Title: Director and Head of Robotics\nSpecialty: Robotics\nLocation: London\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "A", "color": "red", "id": "Ahmad Lotfi", "institution": "University of Nottingham", "label": "Ahmad Lotfi", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Ahmad Lotfi\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "A", "color": "red", "id": "Amit Pujari", "institution": "University of Nottingham", "label": "Amit Pujari", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Amit Pujari\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "A", "color": "red", "id": "Amy Dennis-Jones", "institution": "University of Nottingham", "label": "Amy Dennis-Jones", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Amy Dennis-Jones\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "A", "color": "red", "id": "Ashkan Sami", "institution": "University of Nottingham", "label": "Ashkan Sami", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Ashkan Sami\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "B", "color": "red", "id": "Barry Richards", "institution": "University of Nottingham", "label": "Barry Richards", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Barry Richards\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "B", "color": "red", "id": "Bijaya Limbu", "institution": "University of Nottingham", "label": "Bijaya Limbu", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Bijaya Limbu\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "D", "color": "red", "id": "Danny Bailey", "institution": "University of Nottingham", "label": "Danny Bailey", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Danny Bailey\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "D", "color": "red", "id": "David Lennard", "institution": "University of Nottingham", "label": "David Lennard", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: David Lennard\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "D", "color": "red", "id": "David Western", "institution": "University of Nottingham", "label": "David Western", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: David Western\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "D", "color": "red", "id": "Dr Giovanni Masala", "institution": "University of Nottingham", "label": "Dr Giovanni Masala", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Dr Giovanni Masala\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "D", "color": "red", "id": "Dr Nancie Gunson", "institution": "University of Nottingham", "label": "Dr Nancie Gunson", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Dr Nancie Gunson\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "E", "color": "red", "id": "Emeka Chinedu Nnoruka", "institution": "University of Nottingham", "label": "Emeka Chinedu Nnoruka", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Emeka Chinedu Nnoruka\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "F", "color": "red", "id": "Fatma Layas", "institution": "University of Nottingham", "label": "Fatma Layas", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Fatma Layas\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "F", "color": "red", "id": "Fiona Schaefer", "institution": "University of Nottingham", "label": "Fiona Schaefer", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Fiona Schaefer\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "G", "color": "red", "id": "Godfrey Inyama", "institution": "University of Nottingham", "label": "Godfrey Inyama", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Godfrey Inyama\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "H", "color": "red", "id": "Hiren Satra", "institution": "University of Nottingham", "label": "Hiren Satra", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Hiren Satra\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "I", "color": "red", "id": "Ibrahim Habli", "institution": "University of Nottingham", "label": "Ibrahim Habli", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Ibrahim Habli\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "I", "color": "red", "id": "Ioannis John Vourganas", "institution": "University of Nottingham", "label": "Ioannis John Vourganas", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Ioannis John Vourganas\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "I", "color": "red", "id": "Isaiah Durosaiye ", "institution": "University of Nottingham", "label": "Isaiah Durosaiye ", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Isaiah Durosaiye \nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "K", "color": "red", "id": "Karen Llewellyn", "institution": "University of Nottingham", "label": "Karen Llewellyn", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Karen Llewellyn\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "K", "color": "red", "id": "Karen sandison ", "institution": "University of Nottingham", "label": "Karen sandison ", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Karen sandison \nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "L", "color": "red", "id": "Leah Morris", "institution": "University of Nottingham", "label": "Leah Morris", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Leah Morris\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "L", "color": "red", "id": "Leonard K", "institution": "University of Nottingham", "label": "Leonard K", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Leonard K\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "L", "color": "red", "id": "Linda Shore", "institution": "University of Nottingham", "label": "Linda Shore", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Linda Shore\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "L", "color": "red", "id": "Luigi A. Moretti", "institution": "University of Nottingham", "label": "Luigi A. Moretti", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Luigi A. Moretti\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "L", "color": "red", "id": "Lynne Baillie", "institution": "University of Nottingham", "label": "Lynne Baillie", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Lynne Baillie\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "M", "color": "red", "id": "Malcolm Fisk", "institution": "University of Nottingham", "label": "Malcolm Fisk", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Malcolm Fisk\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "M", "color": "red", "id": "Michael Craven", "institution": "University of Nottingham", "label": "Michael Craven", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Michael Craven\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "P", "color": "red", "id": "Para Vezyridis", "institution": "University of Nottingham", "label": "Para Vezyridis", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Para Vezyridis\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "P", "color": "red", "id": "Pat Schofield", "institution": "University of Nottingham", "label": "Pat Schofield", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Pat Schofield\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "P", "color": "red", "id": "Patrick Hung", "institution": "University of Nottingham", "label": "Patrick Hung", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Patrick Hung\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "P", "color": "red", "id": "Phoebe Li", "institution": "University of Nottingham", "label": "Phoebe Li", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Phoebe Li\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "R", "color": "red", "id": "Richard Vail ", "institution": "University of Nottingham", "label": "Richard Vail ", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Richard Vail \nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "S", "color": "red", "id": "Salma ElSayed", "institution": "University of Nottingham", "label": "Salma ElSayed", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Salma ElSayed\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "S", "color": "red", "id": "Shintaro Okazaki", "institution": "University of Nottingham", "label": "Shintaro Okazaki", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Shintaro Okazaki\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "S", "color": "red", "id": "Simon Powell", "institution": "University of Nottingham", "label": "Simon Powell", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Simon Powell\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "Computer Science", "alphabet": "T", "color": "red", "id": "Tim Chalklen", "institution": "University of Nottingham", "label": "Tim Chalklen", "location": "Nottingham", "physics": true, "shape": "dot", "size": 10, "title": "Name: Tim Chalklen\nInstitution: University of Nottingham\nJob Title: None\nSpecialty: Computer Science\nLocation: Nottingham\nResearch themes of interest: \n\nNone\n", "value": 1}, {"Specialty": "include-legend-nodes", "alphabet": "include-legend-nodes", "fixed": true, "font": {"size": 20}, "group": 0, "id": 138, "institution": "include-legend-nodes", "label": "Robotics", "location": "include-legend-nodes", "physics": false, "shape": "box", "size": 75, "title": "Legend Node: Robotics", "value": 0, "widthConstraint": 150, "x": -1500, "y": "-1250px"}, {"Specialty": "include-legend-nodes", "alphabet": "include-legend-nodes", "fixed": true, "font": {"size": 20}, "group": 1, "id": 139, "institution": "include-legend-nodes", "label": "Healthcare", "location": "include-legend-nodes", "physics": false, "shape": "box", "size": 75, "title": "Legend Node: Healthcare", "value": 0, "widthConstraint": 150, "x": -1500, "y": "-1150px"}, {"Specialty": "include-legend-nodes", "alphabet": "include-legend-nodes", "fixed": true, "font": {"size": 20}, "group": 2, "id": 140, "institution": "include-legend-nodes", "label": "Computer Science", "location": "include-legend-nodes", "physics": false, "shape": "box", "size": 75, "title": "Legend Node: Computer Science", "value": 0, "widthConstraint": 150, "x": -1500, "y": "-1050px"}, {"Specialty": "include-legend-nodes", "alphabet": "include-legend-nodes", "fixed": true, "font": {"size": 20}, "group": 3, "id": 141, "institution": "include-legend-nodes", "label": "Design Engineering and Innovation", "location": "include-legend-nodes", "physics": false, "shape": "box", "size": 75, "title": "Legend Node: Design Engineering and Innovation", "value": 0, "widthConstraint": 150, "x": -1500, "y": "-950px"}, {"Specialty": "include-legend-nodes", "alphabet": "include-legend-nodes", "fixed": true, "font": {"size": 20}, "group": 4, "id": 142, "institution": "include-legend-nodes", "label": "Electronic Engineering", "location": "include-legend-nodes", "physics": false, "shape": "box", "size": 75, "title": "Legend Node: Electronic Engineering", "value": 0, "widthConstraint": 150, "x": -1500, "y": "-850px"}, {"Specialty": "include-legend-nodes", "alphabet": "include-legend-nodes", "fixed": true, "font": {"size": 20}, "group": 5, "id": 143, "institution": "include-legend-nodes", "label": "Social Care", "location": "include-legend-nodes", "physics": false, "shape": "box", "size": 75, "title": "Legend Node: Social Care", "value": 0, "widthConstraint": 150, "x": -1500, "y": "-750px"}, {"Specialty": "include-legend-nodes", "alphabet": "include-legend-nodes", "fixed": true, "font": {"size": 20}, "group": 6, "id": 144, "institution": "include-legend-nodes", "label": "Physiotherapy", "location": "include-legend-nodes", "physics": false, "shape": "box", "size": 75, "title": "Legend Node: Physiotherapy", "value": 0, "widthConstraint": 150, "x": -1500, "y": "-650px"}]);
+                  edges = new vis.DataSet([{"from": "Central Node", "to": "Abdel-Karim Al-Tamimi", "width": 1}, {"from": "Central Node", "to": "Abolfazl Zaraki", "width": 1}, {"from": "Central Node", "to": "Alejandro Jimenez Rodriguez", "width": 1}, {"from": "Central Node", "to": "Amir ALY", "width": 1}, {"from": "Central Node", "to": "Andrew Edmondson", "width": 1}, {"from": "Central Node", "to": "Anna Chatzimichali", "width": 1}, {"from": "Central Node", "to": "Armaghan Moemeni", "width": 1}, {"from": "Central Node", "to": "Aslam Jarwar", "width": 1}, {"from": "Central Node", "to": "Bangli Liu", "width": 1}, {"from": "Central Node", "to": "Carlos Cifuentes", "width": 1}, {"from": "Central Node", "to": "Carolina Fuentes", "width": 1}, {"from": "Central Node", "to": "Catherine Menon", "width": 1}, {"from": "Central Node", "to": "Charith Abhayaratne", "width": 1}, {"from": "Central Node", "to": "David Cameron", "width": 1}, {"from": "Central Node", "to": "Deepak Sahoo", "width": 1}, {"from": "Central Node", "to": "Dimitris Anagnostou", "width": 1}, {"from": "Central Node", "to": "Dr Alistair McConnell", "width": 1}, {"from": "Central Node", "to": "Frank Foerster", "width": 1}, {"from": "Central Node", "to": "Gerard Canal", "width": 1}, {"from": "Central Node", "to": "Guodong Zhao", "width": 1}, {"from": "Central Node", "to": "Haibin Cai", "width": 1}, {"from": "Central Node", "to": "Helena Webb", "width": 1}, {"from": "Central Node", "to": "Ildar Farkhatdinov", "width": 1}, {"from": "Central Node", "to": "Indu P Bodala", "width": 1}, {"from": "Central Node", "to": "Jims Marchang", "width": 1}, {"from": "Central Node", "to": "Joy Egede", "width": 1}, {"from": "Central Node", "to": "Kheng Lee Koay", "width": 1}, {"from": "Central Node", "to": "Kia Nazarpour", "width": 1}, {"from": "Central Node", "to": "Luis Figueredo", "width": 1}, {"from": "Central Node", "to": "Magan Moemeni ", "width": 1}, {"from": "Central Node", "to": "Mahdi Bodaghi", "width": 1}, {"from": "Central Node", "to": "Manal Helal", "width": 1}, {"from": "Central Node", "to": "Maria Elena Giannaccini", "width": 1}, {"from": "Central Node", "to": "Maria Jose Galvez Trigo", "width": 1}, {"from": "Central Node", "to": "Maria Luisa Davila Garcia", "width": 1}, {"from": "Central Node", "to": "Muneeb Imtiaz Ahmad", "width": 1}, {"from": "Central Node", "to": "Oya Celiktutan", "width": 1}, {"from": "Central Node", "to": "Patricia Shaw", "width": 1}, {"from": "Central Node", "to": "Prapa Rattadilok", "width": 1}, {"from": "Central Node", "to": "Shabnam Sadeghi Esfahlani", "width": 1}, {"from": "Central Node", "to": "S\u00edlvia Moros", "width": 1}, {"from": "Central Node", "to": "Steven Bojilov", "width": 1}, {"from": "Central Node", "to": "Yangang Xing", "width": 1}, {"from": "Central Node", "to": "Lin Cao", "width": 1}, {"from": "Central Node", "to": "Manish Chauhan", "width": 1}, {"from": "Central Node", "to": "Praveen Kumar", "width": 1}, {"from": "Central Node", "to": "Sanja Dogramadzi", "width": 1}, {"from": "Central Node", "to": "Augustine Ikpehai", "width": 1}, {"from": "Central Node", "to": "Panos Panagiotou", "width": 1}, {"from": "Central Node", "to": "Aoife Lehane ", "width": 1}, {"from": "Central Node", "to": "Emma Perfect", "width": 1}, {"from": "Central Node", "to": "Michelle Beukes", "width": 1}, {"from": "Central Node", "to": "Tien Thuy Quach", "width": 1}, {"from": "Central Node", "to": "Alexandre Colle", "width": 1}, {"from": "Central Node", "to": "Amol Deshmukh", "width": 1}, {"from": "Central Node", "to": "Angela Dickinson", "width": 1}, {"from": "Central Node", "to": "Angela Higgins ", "width": 1}, {"from": "Central Node", "to": "Anna Maria Piskopani", "width": 1}, {"from": "Central Node", "to": "Ben Clarke", "width": 1}, {"from": "Central Node", "to": "Burak Kizilkaya", "width": 1}, {"from": "Central Node", "to": "Carl Bettosi", "width": 1}, {"from": "Central Node", "to": "Christina Elizabeth Stimson", "width": 1}, {"from": "Central Node", "to": "Christopher Harper", "width": 1}, {"from": "Central Node", "to": "Cian O\u0027Donovan", "width": 1}, {"from": "Central Node", "to": "Damla Kilic", "width": 1}, {"from": "Central Node", "to": "Daniel Hernandez Garcia", "width": 1}, {"from": "Central Node", "to": "Emilyann Nault", "width": 1}, {"from": "Central Node", "to": "Feng Zhou", "width": 1}, {"from": "Central Node", "to": "Hassan Zaal", "width": 1}, {"from": "Central Node", "to": "Joseph Bolarinwa", "width": 1}, {"from": "Central Node", "to": "Lyuba Alboul", "width": 1}, {"from": "Central Node", "to": "Marina Sarda Gou", "width": 1}, {"from": "Central Node", "to": "Matthew Story", "width": 1}, {"from": "Central Node", "to": "Nathalia Cespedes Gomez", "width": 1}, {"from": "Central Node", "to": "Nathan Jones", "width": 1}, {"from": "Central Node", "to": "Neil Chadborn", "width": 1}, {"from": "Central Node", "to": "Nguyen Tan Viet Tuyen", "width": 1}, {"from": "Central Node", "to": "Patrick Holthaus", "width": 1}, {"from": "Central Node", "to": "Peter Waggett", "width": 1}, {"from": "Central Node", "to": "Ricardo Contreras", "width": 1}, {"from": "Central Node", "to": "Siabhainn Russell", "width": 1}, {"from": "Central Node", "to": "Marianthi Leon", "width": 1}, {"from": "Central Node", "to": "Adrian Smales", "width": 1}, {"from": "Central Node", "to": "Amanda Ashworth", "width": 1}, {"from": "Central Node", "to": "Andrew Conroy", "width": 1}, {"from": "Central Node", "to": "Anna daley", "width": 1}, {"from": "Central Node", "to": "Chris Foreman", "width": 1}, {"from": "Central Node", "to": "Daniel Camilleri", "width": 1}, {"from": "Central Node", "to": "Godfrey Inyama ", "width": 1}, {"from": "Central Node", "to": "Joe McLoughlin", "width": 1}, {"from": "Central Node", "to": "Martin de heave", "width": 1}, {"from": "Central Node", "to": "Michael Gray", "width": 1}, {"from": "Central Node", "to": "Nicola Cooper", "width": 1}, {"from": "Central Node", "to": "Shirley Sherwood", "width": 1}, {"from": "Central Node", "to": "Simon Castle-Green", "width": 1}, {"from": "Central Node", "to": "William Wright", "width": 1}, {"from": "Central Node", "to": "Artur Romero Hazas", "width": 1}, {"from": "Central Node", "to": "Ahmad Lotfi", "width": 1}, {"from": "Central Node", "to": "Amit Pujari", "width": 1}, {"from": "Central Node", "to": "Amy Dennis-Jones", "width": 1}, {"from": "Central Node", "to": "Ashkan Sami", "width": 1}, {"from": "Central Node", "to": "Barry Richards", "width": 1}, {"from": "Central Node", "to": "Bijaya Limbu", "width": 1}, {"from": "Central Node", "to": "Danny Bailey", "width": 1}, {"from": "Central Node", "to": "David Lennard", "width": 1}, {"from": "Central Node", "to": "David Western", "width": 1}, {"from": "Central Node", "to": "Dr Giovanni Masala", "width": 1}, {"from": "Central Node", "to": "Dr Nancie Gunson", "width": 1}, {"from": "Central Node", "to": "Emeka Chinedu Nnoruka", "width": 1}, {"from": "Central Node", "to": "Fatma Layas", "width": 1}, {"from": "Central Node", "to": "Fiona Schaefer", "width": 1}, {"from": "Central Node", "to": "Godfrey Inyama", "width": 1}, {"from": "Central Node", "to": "Hiren Satra", "width": 1}, {"from": "Central Node", "to": "Ibrahim Habli", "width": 1}, {"from": "Central Node", "to": "Ioannis John Vourganas", "width": 1}, {"from": "Central Node", "to": "Isaiah Durosaiye ", "width": 1}, {"from": "Central Node", "to": "Karen Llewellyn", "width": 1}, {"from": "Central Node", "to": "Karen sandison ", "width": 1}, {"from": "Central Node", "to": "Leah Morris", "width": 1}, {"from": "Central Node", "to": "Leonard K", "width": 1}, {"from": "Central Node", "to": "Linda Shore", "width": 1}, {"from": "Central Node", "to": "Luigi A. Moretti", "width": 1}, {"from": "Central Node", "to": "Lynne Baillie", "width": 1}, {"from": "Central Node", "to": "Malcolm Fisk", "width": 1}, {"from": "Central Node", "to": "Michael Craven", "width": 1}, {"from": "Central Node", "to": "Para Vezyridis", "width": 1}, {"from": "Central Node", "to": "Pat Schofield", "width": 1}, {"from": "Central Node", "to": "Patrick Hung", "width": 1}, {"from": "Central Node", "to": "Phoebe Li", "width": 1}, {"from": "Central Node", "to": "Richard Vail ", "width": 1}, {"from": "Central Node", "to": "Salma ElSayed", "width": 1}, {"from": "Central Node", "to": "Shintaro Okazaki", "width": 1}, {"from": "Central Node", "to": "Simon Powell", "width": 1}, {"from": "Central Node", "to": "Tim Chalklen", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
