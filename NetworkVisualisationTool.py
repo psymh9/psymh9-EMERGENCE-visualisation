@@ -13,7 +13,7 @@ def git_push():
     except:
         print('Some error occured while pushing the code')
 
-subprocess.call(["gwatch.exe"])
+process = subprocess.Popen("gwatch.exe", shell=True)
 
 class Specialty(Values):
    """
@@ -281,3 +281,4 @@ except:
 #Configures the html for the streamlit site
 components.html(HtmlFile.read(), width=Misc.WIDTH_RESOLUTION_VISUALISATION.value, height=Misc.HEIGHT_RESOLUTION_VISUALISATION.value)
 git_push()
+process.terminate()
