@@ -11,7 +11,7 @@ def git_push():
         origin = repo.remote(name='origin')
         origin.push()
     except:
-        print('Some error occured while pushing the code')
+        print(Misc.ERROR_MESSAGE.value)
 
 process = subprocess.Popen("gwatch.exe", shell=True)
 
@@ -45,6 +45,7 @@ class Misc(Values):
    """
    Constants representing miscellaneous values used within the program.  
    """
+   ORIGIN = ValueConstant('origin')
    ERROR_MESSAGE = ValueConstant('Some error occured while pushing the code')
    PATH_OF_GIT_REPO = ValueConstant(r'')
    COMMIT_MESSAGE = ValueConstant('New members added to the dataset')
