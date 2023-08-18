@@ -115,7 +115,7 @@ class Misc(Values):
    FORMATTED_HTML_FILE_NAME = ValueConstant("{path_label}\\network_visualisation.html")
    PAGE_LAYOUT = ValueConstant("wide") 
 
-process = subprocess.Popen(Misc.GWATCH.value, shell=Misc.TRUE.value)
+process = subprocess.Popen(Misc.GWATCH.value)
 
 def setMemberColour(specialty):
    """
