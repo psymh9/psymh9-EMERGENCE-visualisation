@@ -8,7 +8,7 @@ from git import Repo
 def git_push():
     try:
         repo = Repo(Misc.PATH_OF_GIT_REPO.value)
-        origin = repo.remote(name='origin')
+        origin = repo.remote(name=Misc.ORIGIN.value)
         origin.push()
     except:
         print(Misc.ERROR_MESSAGE.value)
@@ -45,6 +45,7 @@ class Misc(Values):
    """
    Constants representing miscellaneous values used within the program.  
    """
+   GWATCH = ValueConstant("gwatch.exe")
    ORIGIN = ValueConstant('origin')
    ERROR_MESSAGE = ValueConstant('Some error occured while pushing the code')
    PATH_OF_GIT_REPO = ValueConstant(r'')
