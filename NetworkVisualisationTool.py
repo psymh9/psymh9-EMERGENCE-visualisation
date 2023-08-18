@@ -2,6 +2,7 @@ from pyvis.network import Network
 from constantly import ValueConstant, Values
 from textwrap3 import wrap
 import networkx as nx, openpyxl, streamlit.components.v1 as components, os, streamlit as st
+from git import Repo
 
 class Specialty(Values):
    """
@@ -33,6 +34,7 @@ class Misc(Values):
    """
    Constants representing miscellaneous values used within the program.  
    """
+   PATH_OF_GIT_REPO = ValueConstant(r'')
    EXCEL_FILE = ValueConstant("NetworkVisualisationData/EMERGENCECollatedData.xlsx")
    ZERO = ValueConstant(0)
    ONE = ValueConstant(1)
@@ -99,6 +101,14 @@ class Misc(Values):
    HTML_FILES = ValueConstant("html_files")
    FORMATTED_HTML_FILE_NAME = ValueConstant("{path_label}\\network_visualisation.html")
    PAGE_LAYOUT = ValueConstant("wide")
+
+def git_push():
+    try:
+        repo = Repo(Misc.PATH_OF_GIT_REPO.value)
+        origin = repo.remote(name='origin')
+        origin.push()
+    except:
+        print('Some error occured while pushing the code')    
 
 def setMemberColour(specialty):
    """
@@ -267,4 +277,4 @@ except:
 #Configures the html for the streamlit site
 components.html(HtmlFile.read(), width=Misc.WIDTH_RESOLUTION_VISUALISATION.value, height=Misc.HEIGHT_RESOLUTION_VISUALISATION.value)
 
-
+git_push()
