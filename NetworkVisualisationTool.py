@@ -45,6 +45,7 @@ class Misc(Values):
    """
    Constants representing miscellaneous values used within the program.  
    """
+   ERROR_MESSAGE = ValueConstant('Some error occured while pushing the code')
    PATH_OF_GIT_REPO = ValueConstant(r'')
    COMMIT_MESSAGE = ValueConstant('New members added to the dataset')
    EXCEL_FILE = ValueConstant("NetworkVisualisationData/EMERGENCECollatedData.xlsx")
@@ -280,5 +281,7 @@ except:
 
 #Configures the html for the streamlit site
 components.html(HtmlFile.read(), width=Misc.WIDTH_RESOLUTION_VISUALISATION.value, height=Misc.HEIGHT_RESOLUTION_VISUALISATION.value)
+#pushes any changes in the data to git 
 git_push()
+#kills the gwatch process
 process.terminate()
