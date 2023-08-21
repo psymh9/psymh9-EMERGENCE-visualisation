@@ -215,7 +215,7 @@ legend_nodes = [
             Misc.INSTITUTION_WORD.value: Specialty.INCLUDE_LEGEND_NODES.value,#Sets the institution attribute for the legend 'include-legend-nodes'
             Misc.ALPHABET.value: Specialty.INCLUDE_LEGEND_NODES.value, #Sets the alphabet attribute for the legend 'include-legend-nodes'
             Misc.TITLE.value: Misc.LEGEND_TITLE.value + legend_labels[legend_node], #Sets the title attribute for the legend 'include-legend-nodes'
-            Misc.LOCATION.value: Specialty.INCLUDE_LEGEND_NODES.value
+            Misc.LOCATION.value: Specialty.INCLUDE_LEGEND_NODES.value #Sets the location attribute to the 'include-legend-nodes' value
         }
     )
     for legend_node in range(num_legend_nodes)#Creates 'num_legend_nodes' legend nodes and specifies an attribute for all of them
@@ -260,7 +260,6 @@ G = Network(notebook=Misc.TRUE.value, filter_menu=Misc.TRUE.value, height=Misc.H
 #Defines the PyVis graph which takes in the initial networkX graph as an input.
 G.from_nx(nx_graph) 
 #Derives a PyVis graph from the previous networkX graph
-#Test Gwatch
 
 #Sets the title of the StreamLit Website
 
