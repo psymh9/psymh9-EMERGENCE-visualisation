@@ -38,7 +38,7 @@ class Misc(Values):
    ERROR_MESSAGE = ValueConstant('Some error occured while pushing the code')
    PATH_OF_GIT_REPO = ValueConstant(r'')
    COMMIT_MESSAGE = ValueConstant('New members added to the dataset')
-   EXCEL_FILE = ValueConstant("NetworkVisualisationData/EMERGENCECollatedData.xlsx")
+   EXCEL_FILE = ValueConstant("NetworkVisualisationData\\EMERGENCECollatedData.xlsx")
    ZERO = ValueConstant(0)
    ONE = ValueConstant(1)
    TWO = ValueConstant(2)
@@ -224,7 +224,7 @@ legend_nodes = [
             Misc.INSTITUTION_WORD.value: Specialty.INCLUDE_LEGEND_NODES.value,#Sets the institution attribute for the legend 'include-legend-nodes'
             Misc.ALPHABET.value: Specialty.INCLUDE_LEGEND_NODES.value, #Sets the alphabet attribute for the legend 'include-legend-nodes'
             Misc.TITLE.value: Misc.LEGEND_TITLE.value + legend_labels[legend_node], #Sets the title attribute for the legend 'include-legend-nodes'
-            Misc.LOCATION.value: Specialty.INCLUDE_LEGEND_NODES.value
+            Misc.LOCATION.value: Specialty.INCLUDE_LEGEND_NODES.value#Sets the location attribute to the 'include_legend_nodes' value
         }
     )
     for legend_node in range(num_legend_nodes)#Creates 'num_legend_nodes' legend nodes and specifies an attribute for all of them
