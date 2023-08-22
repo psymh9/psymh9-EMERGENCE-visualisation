@@ -116,6 +116,8 @@ def git_push():
     except:
         print(Misc.ERROR_MESSAGE.value)
 
+#pushes any changes in the data to git 
+git_push()
 
 def setMemberColour(specialty):
    """
@@ -282,5 +284,4 @@ except:
 
 #Configures the html for the streamlit site
 components.html(HtmlFile.read(), width=Misc.WIDTH_RESOLUTION_VISUALISATION.value, height=Misc.HEIGHT_RESOLUTION_VISUALISATION.value)
-#pushes any changes in the data to git 
-git_push()
+
