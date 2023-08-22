@@ -1,7 +1,7 @@
 from pyvis.network import Network
 from constantly import ValueConstant, Values
 from textwrap3 import wrap
-import networkx as nx, openpyxl, streamlit.components.v1 as components, os, streamlit as st, subprocess
+import networkx as nx, openpyxl, streamlit.components.v1 as components, streamlit as st
 from git import Repo
 
 
@@ -115,13 +115,10 @@ class Misc(Values):
    FORMATTED_HTML_FILE_NAME = ValueConstant("{path_label}\\network_visualisation.html")
    PAGE_LAYOUT = ValueConstant("wide") 
 
-process = subprocess.Popen(Misc.GWATCH.value)
-
 def setMemberColour(specialty):
    """
    Returns a specific node-colour based on the member's specialty.  
    """
-
    #Colours nodes a unique colour according to the specialty
    if (specialty == Specialty.COMPUTER_SCIENCE.value):
       #All Computer Scientists are coloured as red
@@ -283,6 +280,3 @@ except:
 #Configures the html for the streamlit site
 components.html(HtmlFile.read(), width=Misc.WIDTH_RESOLUTION_VISUALISATION.value, height=Misc.HEIGHT_RESOLUTION_VISUALISATION.value)
 #pushes any changes in the data to git 
-git_push()
-#kills the gwatch process
-process.terminate()
