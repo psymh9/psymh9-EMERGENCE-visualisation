@@ -3,6 +3,7 @@ from constantly import ValueConstant, Values
 import os  
 
 cwd = os.getcwd()
+
 class Misc(Values):
    """
    Constants representing miscellaneous values used within the program.  
