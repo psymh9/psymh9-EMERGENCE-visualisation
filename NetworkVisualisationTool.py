@@ -4,15 +4,6 @@ from textwrap3 import wrap
 import networkx as nx, openpyxl, streamlit.components.v1 as components, os, streamlit as st, subprocess
 from git import Repo
 
-
-def git_push():
-    try:
-        repo = Repo(Misc.PATH_OF_GIT_REPO.value)
-        origin = repo.remote(name=Misc.ORIGIN.value)
-        origin.push()
-    except:
-        print(Misc.ERROR_MESSAGE.value)
-
 class Specialty(Values):
    """
    Constants representing various specialties across the EMERGENCE network. 
@@ -43,7 +34,7 @@ class Misc(Values):
    """
    Constants representing miscellaneous values used within the program.  
    """
-   GWATCH = ValueConstant("gwatch.exe")
+   COMMIT_MESSAGE = ValueConstant("Update Network Visualisation")
    ORIGIN = ValueConstant('origin')
    ERROR_MESSAGE = ValueConstant('Some error occured while pushing the code')
    PATH_OF_GIT_REPO = ValueConstant(r'')
@@ -115,7 +106,16 @@ class Misc(Values):
    FORMATTED_HTML_FILE_NAME = ValueConstant("{path_label}\\network_visualisation.html")
    PAGE_LAYOUT = ValueConstant("wide") 
 
-process = subprocess.Popen(Misc.GWATCH.value, shell=Misc.TRUE.value)
+def git_push():
+    try:
+        repo = Repo(Misc.PATH_OF_GIT_REPO.value)
+        repo.git.add(update=True)
+        repo.index.commit(Misc.COMMIT_MESSAGE.value)
+        origin = repo.remote(name=Misc.ORIGIN.value)
+        origin.push()
+    except:
+        print(Misc.ERROR_MESSAGE.value)
+
 
 def setMemberColour(specialty):
    """
@@ -284,5 +284,3 @@ except:
 components.html(HtmlFile.read(), width=Misc.WIDTH_RESOLUTION_VISUALISATION.value, height=Misc.HEIGHT_RESOLUTION_VISUALISATION.value)
 #pushes any changes in the data to git 
 git_push()
-#kills the gwatch process
-process.terminate()
