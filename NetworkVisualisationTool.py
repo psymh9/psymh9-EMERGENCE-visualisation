@@ -34,7 +34,6 @@ class Misc(Values):
    """
    Constants representing miscellaneous values used within the program.  
    """
-   COMMIT_MESSAGE = ValueConstant("Update Network Visualisation")
    ORIGIN = ValueConstant('origin')
    ERROR_MESSAGE = ValueConstant('Some error occured while pushing the code')
    PATH_OF_GIT_REPO = ValueConstant(r'')
@@ -105,6 +104,7 @@ class Misc(Values):
    HTML_FILES = ValueConstant("html_files")
    FORMATTED_HTML_FILE_NAME = ValueConstant("{path_label}\\network_visualisation.html")
    PAGE_LAYOUT = ValueConstant("wide") 
+
 
 def git_push():
     #Checks for changes to the data file, if a new member has been added a commit is staged then pushed
