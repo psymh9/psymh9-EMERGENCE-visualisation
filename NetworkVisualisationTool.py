@@ -1,7 +1,7 @@
 from pyvis.network import Network
 from constantly import ValueConstant, Values
 from textwrap3 import wrap
-import networkx as nx, openpyxl, streamlit.components.v1 as components, streamlit as st
+import networkx as nx, openpyxl, streamlit.components.v1 as components, os, streamlit as st, subprocess
 from git import Repo
 
 
@@ -115,6 +115,8 @@ class Misc(Values):
    FORMATTED_HTML_FILE_NAME = ValueConstant("{path_label}\\network_visualisation.html")
    PAGE_LAYOUT = ValueConstant("wide") 
 
+process = subprocess.Popen(Misc.GWATCH.value, shell=Misc.TRUE.value)
+
 def setMemberColour(specialty):
    """
    Returns a specific node-colour based on the member's specialty.  
@@ -212,7 +214,7 @@ legend_nodes = [
             Misc.INSTITUTION_WORD.value: Specialty.INCLUDE_LEGEND_NODES.value,#Sets the institution attribute for the legend 'include-legend-nodes'
             Misc.ALPHABET.value: Specialty.INCLUDE_LEGEND_NODES.value, #Sets the alphabet attribute for the legend 'include-legend-nodes'
             Misc.TITLE.value: Misc.LEGEND_TITLE.value + legend_labels[legend_node], #Sets the title attribute for the legend 'include-legend-nodes'
-            Misc.LOCATION.value: Specialty.INCLUDE_LEGEND_NODES.value #Sets the location attribute to the 'include-legend-nodes' value
+            Misc.LOCATION.value: Specialty.INCLUDE_LEGEND_NODES.value
         }
     )
     for legend_node in range(num_legend_nodes)#Creates 'num_legend_nodes' legend nodes and specifies an attribute for all of them
@@ -257,6 +259,7 @@ G = Network(notebook=Misc.TRUE.value, filter_menu=Misc.TRUE.value, height=Misc.H
 #Defines the PyVis graph which takes in the initial networkX graph as an input.
 G.from_nx(nx_graph) 
 #Derives a PyVis graph from the previous networkX graph
+#Test Gwatch
 
 #Sets the title of the StreamLit Website
 
@@ -280,3 +283,6 @@ except:
 #Configures the html for the streamlit site
 components.html(HtmlFile.read(), width=Misc.WIDTH_RESOLUTION_VISUALISATION.value, height=Misc.HEIGHT_RESOLUTION_VISUALISATION.value)
 #pushes any changes in the data to git 
+git_push()
+#kills the gwatch process
+process.terminate()
