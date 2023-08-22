@@ -11,7 +11,7 @@ class Misc(Values):
    ERROR_MESSAGE = ValueConstant('Some error occured while pushing the code')
    PATH_OF_GIT_REPO = ValueConstant(r'')
    COMMIT_MESSAGE = ValueConstant('New members added to the dataset')
-   EXCEL_FILE = ValueConstant(cwd + "\\NetworkVisualisationData\\EMERGENCECollatedData.xlsx")
+   EXCEL_FILE = ValueConstant(cwd + "\\NetworkVisualisationData\\EMERGENCECollatedData.xlsm")
 
 def git_push():
     #Checks for changes to the data file, if a new member has been added a commit is staged then pushed
