@@ -1,7 +1,7 @@
 from pyvis.network import Network
 from constantly import ValueConstant, Values
 from textwrap3 import wrap
-import networkx as nx, openpyxl, streamlit.components.v1 as components, os, streamlit as st, subprocess
+import networkx as nx, openpyxl, streamlit.components.v1 as components, streamlit as st
 from git import Repo
 
 
