@@ -107,14 +107,22 @@ class Misc(Values):
    PAGE_LAYOUT = ValueConstant("wide") 
 
 def git_push():
+    #Checks for changes to the data file, if a new member has been added a commit is staged then pushed
     try:
         repo = Repo(Misc.PATH_OF_GIT_REPO.value)
-        repo.git.add(all=True)
+        #Contains the repo object
+        repo.git.add(Misc.EXCEL_FILE.value)
+        #Stages the excel file containing all of the member data to git if there are any changes
         repo.index.commit(Misc.COMMIT_MESSAGE.value)
+        #Commits the updated file with the commit message 'Update Network Visualisation'
         origin = repo.remote(name=Misc.ORIGIN.value)
+        #Contains the origin branch of the repository
         origin.push()
+        #pushes the changes up to the remote repository
     except:
+        #If this process doesn't work print out an error message
         print(Misc.ERROR_MESSAGE.value)
+
 
 #pushes any changes in the data to git 
 git_push()
