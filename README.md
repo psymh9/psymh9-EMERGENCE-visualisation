@@ -12,7 +12,7 @@ Each member of the network is represented as an individual node on the graph col
 
 COMPUTER SCIENTISTS are coloured in RED. 
 
-ROBOTICISTS are coloured in BLUE
+<span style="color:blue">ROBOTICISTS</span>. are coloured in <span style="color:blue">BLUE</span>
 
 HEALTHCARE PROFESSIONALS are coloured in YELLOW
 
