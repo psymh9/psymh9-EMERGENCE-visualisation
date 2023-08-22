@@ -109,7 +109,7 @@ class Misc(Values):
 def git_push():
     try:
         repo = Repo(Misc.PATH_OF_GIT_REPO.value)
-        repo.git.add(update=True)
+        repo.git.add(all=True)
         repo.index.commit(Misc.COMMIT_MESSAGE.value)
         origin = repo.remote(name=Misc.ORIGIN.value)
         origin.push()
