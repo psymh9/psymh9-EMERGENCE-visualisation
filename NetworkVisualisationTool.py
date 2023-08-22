@@ -39,7 +39,7 @@ class Misc(Values):
    ERROR_MESSAGE = ValueConstant('Some error occured while pushing the code')
    PATH_OF_GIT_REPO = ValueConstant(r'')
    COMMIT_MESSAGE = ValueConstant('New members added to the dataset')
-   EXCEL_FILE = ValueConstant("NetworkVisualisationData/EMERGENCECollatedData.xlsx")
+   EXCEL_FILE = ValueConstant("NetworkVisualisationData/EMERGENCECollatedData.xlsm")
    ZERO = ValueConstant(0)
    ONE = ValueConstant(1)
    TWO = ValueConstant(2)
