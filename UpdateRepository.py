@@ -2,6 +2,7 @@ from git import Repo
 from constantly import ValueConstant, Values
 import os  
 
+#Gets the current working directory
 cwd = os.getcwd()
 
 class Misc(Values):
@@ -31,4 +32,5 @@ def git_push():
         #If this process doesn't work print out an error message
         print(Misc.ERROR_MESSAGE.value)
 
+#Calls the git push function
 git_push()
