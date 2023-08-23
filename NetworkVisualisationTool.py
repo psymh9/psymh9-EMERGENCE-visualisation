@@ -35,6 +35,7 @@ class Misc(Values):
    Constants representing miscellaneous values used within the program.  
    """
    ORIGIN = ValueConstant('origin')
+   REMOTE = ValueConstant('remote')
    ERROR_MESSAGE = ValueConstant('Some error occured while pushing the code')
    PATH_OF_GIT_REPO = ValueConstant(r'')
    COMMIT_MESSAGE = ValueConstant('New members added to the dataset')
@@ -201,7 +202,7 @@ x = Misc.LEGEND_X_VALUE.value
 #The y value represents the y position of the legend
 y = Misc.LEGEND_Y_VALUE.value
 #A list of all of the labels for the legend nodes
-legend_labels = [Specialty.ROBOTICS.value,Specialty.HEALTHCARE.value,Specialty.COMPUTER_SCIENCE.value, Specialty.DESIGN_ENGINEERING_INNOVATION.value,
+legend_labels = [Specialty.ROBOTICS.value, Specialty.HEALTHCARE.value, Specialty.COMPUTER_SCIENCE.value, Specialty.DESIGN_ENGINEERING_INNOVATION.value,
                  Specialty.ELECTRONIC_ENGINEERING.value, Specialty.SOCIAL_CARE.value, Specialty.PHYSIOTHERAPY.value]
 
 #A list of tuples containing all of the legend nodes
@@ -265,7 +266,7 @@ for i in range(Misc.ZERO.value, len(member_names)):
    #Iterates through the member_names array
    nx_graph.add_edge(Misc.CENTRAL_NODE_ID.value, member_names[i]) #Creates an edge between the central node and all the other nodes
 
-G = Network(notebook=Misc.TRUE.value, filter_menu=Misc.TRUE.value, height=Misc.HEIGHT.value, width=Misc.WIDTH.value, bgcolor=Misc.BGCOLOUR.value, cdn_resources='remote')
+G = Network(notebook=Misc.TRUE.value, filter_menu=Misc.TRUE.value, select_menu=Misc.TRUE.value,  height=Misc.HEIGHT.value, width=Misc.WIDTH.value, bgcolor=Misc.BGCOLOUR.value, cdn_resources=Misc.REMOTE.value)
 #Defines the PyVis graph which takes in the initial networkX graph as an input.
 G.from_nx(nx_graph) 
 #Derives a PyVis graph from the previous networkX graph
